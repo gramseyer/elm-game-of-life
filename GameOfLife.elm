@@ -1,4 +1,4 @@
-module GameOfLife where
+module GameOfLife (Grid, updateGrid, gridMap, emptyGrid, getElement) where
 
 import Array
 import List
@@ -10,10 +10,6 @@ updateGrid : Dimensions -> List Int -> List Int -> Grid -> Grid
 updateGrid (xMax,yMax) liveToDeath deadToLife g =
     fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g)
 
-coordList : Dimensions -> List (List (Int, Int))
-coordList (xMax, yMax) = 
-    (List.map (\f->List.map f [0..yMax]) (List.map (\x->(\y->(x,y))) [0..xMax]))
-
 fromListList : List (List Bool) -> Grid
 fromListList xs = Array.fromList (List.map (Array.fromList) xs)
 
@@ -24,11 +20,6 @@ getNeighborCount : Grid -> Int -> Int -> Int
 getNeighborCount g x y = 
     List.sum (List.map (\val -> gridIntMap (getElement g val)) 
         [(x-1, y-1), (x-1, y), (x-1,y+1), (x+1, y-1), (x+1, y), (x+1,y+1), (x, y-1), (x,y+1)])
-
-getAlive : Maybe Bool -> Bool
-getAlive x = case x of
-    Nothing -> False
-    Just y -> y
 
 gridIntMap : Maybe Bool -> Int
 gridIntMap x = case x of
@@ -55,7 +46,21 @@ chooseNextState (prevState, neighbors) liveToDeath deadToLife =
         else
             False
 
-gridMap : (((Int,Int), Bool)->b) -> Grid -> List(List b)
-gridMap f g =
-    ( (List.map (\(x, xArray) -> (List.map (\(y, bool) -> (f ((x,y), bool))) (Array.toIndexedList xArray))) (Array.toIndexedList g) ))
+gridMap : (((Int, Int), Bool)->b) -> Grid -> List(List b)
+gridMap f g = gridMapExtra (\((x,y), bool, other)-> f ((x,y), bool)) 0 g
+
+gridMapExtra : (((Int,Int), Bool, other)->b) -> other -> Grid -> List(List b)
+gridMapExtra f goo g =
+    ((List.map 
+        (\(x, xArray) -> 
+            (List.map 
+                (\(y, bool) -> (f ((x,y), bool, goo))) 
+                (Array.toIndexedList xArray))) 
+        (Array.toIndexedList g)))
+
+--Probably no longer necessary
+coordList : Dimensions -> List (List (Int, Int))
+coordList (xMax, yMax) = 
+    (List.map (\f->List.map f [0..yMax]) (List.map (\x->(\y->(x,y))) [0..xMax]))
+
 
