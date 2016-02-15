@@ -1,0 +1,43 @@
+Monday
+completed basic automata
+
+For Friday
+linestyle
+how to use mailboxes/buttons
+
+Longterm
+slider to zoom in and out, requires changing collage and box size
+states for editing
+
+
+
+
+data structure thoughts
+- octuple linked list
+- list of lists
+- 2d array
+
+
+list of boolean lists is probably the most sensible
+True - Alive
+False - Dead
+
+grid [x][y]
+
+x increasing right
+y increasing up
+
+
+neighborsum : Grid -> (Int, Int) -> Int
+neighborsum grid (x,y) = case (x,y) of
+--cases x is 0 or maximum, y is 0 or maximum
+ (0,0) -> grid
+2 states
+2 grids, current and updated
+
+view 
+
+adjust elements affected by button press
+every button press rerenders the grid
+]
+
