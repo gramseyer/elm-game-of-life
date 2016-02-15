@@ -1,4 +1,4 @@
-module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList) where
+module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList, getDimensions) where
 
 import Array
 import List
@@ -6,8 +6,9 @@ import List
 type alias Grid = Array.Array (Array.Array Bool)
 type alias Dimensions = (Int, Int) -- (x,y)
 
-updateGrid : Dimensions -> List Int -> List Int -> Grid -> Grid
-updateGrid (xMax,yMax) liveToDeath deadToLife g =
+updateGrid : List Int -> List Int -> Grid -> Grid
+updateGrid liveToDeath deadToLife g =
+    let (xMax, yMax) = getDimensions g in
     fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g)
 
 fromListList : List (List Bool) -> Grid
@@ -57,6 +58,14 @@ gridMapExtra f goo g =
                 (\(y, bool) -> (f ((x,y), bool, goo))) 
                 (Array.toIndexedList xArray))) 
         (Array.toIndexedList g)))
+
+getDimensions : Grid -> Dimensions
+getDimensions g = (Array.length g, getMax (List.maximum (List.map Array.length (Array.toList g))))
+
+getMax : Maybe (Int) -> Int
+getMax x = case x of
+    Nothing -> 0
+    Just x  -> x
 
 --Probably no longer necessary
 coordList : Dimensions -> List (List (Int, Int))
