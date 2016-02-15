@@ -1,4 +1,4 @@
-module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement) where
+module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList) where
 
 import Array
 import List
