@@ -27,10 +27,10 @@ view (w,h) g =
      height = ceiling (sqsize * (toFloat maxy))
  in
  --create collage of appropriate size, not doing anything intelligent here yet and fill it with squares
+ Debug.log (toString (sqsize,w,h,maxx,maxy, width, height))
  C.collage 
      width height
-     (List.append
-     (List.concat (gridMapExtra makesquare (sqsize, width, height) g))  [(C.move (0,0) (C.filled Color.red (C.square 10)))] )
+     (List.concat (gridMapExtra makesquare (sqsize, width, height) g))
 -- else
   --editing mode stuff
 
@@ -42,15 +42,17 @@ fromJust a = case a of
 makesquare : ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
 makesquare ((x,y), v, (size, maxx, maxy))= 
  if v then
-  C.move (((toFloat x) *size - ((toFloat maxx)/2)) , (toFloat y) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.white (C.square size)), (C.outlined C.defaultLine (C.square size))])
+  C.move ((0.5+(toFloat x)) *size - ((toFloat maxx)/2) , (0.5+ (toFloat y)) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.white (C.square size)), (C.outlined C.defaultLine (C.square size))])
  else 
-  C.move (((toFloat x) *size - ((toFloat maxx)/2)) , (toFloat y) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.black (C.square size)), (C.outlined C.defaultLine (C.square size)) ]) 
+  C.move (((0.5+(toFloat x)) *size - ((toFloat maxx)/2)) , (0.5+(toFloat y)) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.black (C.square size)), (C.outlined C.defaultLine (C.square size)) ]) 
 
 -- List.map (\w-> List.map (\v -> (v, Array.get (snd v) ((Array.get (fst v) grid))))) (List.map (\f->List.map f [0..yMax]) (List.map (\x->(\y->(x,y))) [0..xMax]))
 
+
+
 upstate : Time.Time -> Grid -> Grid
-upstate t g = Debug.log "something" updateGrid (getDimensions g) [0,1,4,5,6,7,8] [3] g 
+upstate t g = updateGrid [0,1,4,5,6,7,8] [3] g 
 
 main : Signal E.Element
 main = Signal.map2 view Window.dimensions
- (Signal.foldp upstate gliderGun (Time.every (Time.millisecond * 50)))
+ (Signal.foldp upstate gliderGun (Time.every (Time.millisecond )))
