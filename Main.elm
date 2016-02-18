@@ -2,7 +2,7 @@ module Main where
 import GameOfLife exposing(..)
 import PresetStarts exposing(..)
 import Graphics.Element as E
-import Graphics.Collage as C
+import Graphics.Collage as C exposing(defaultLine)
 import Signal
 import Color
 import Array
@@ -42,9 +42,9 @@ fromJust a = case a of
 makesquare : ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
 makesquare ((x,y), v, (size, maxx, maxy))= 
  if v then
-  C.move ((0.5+(toFloat x)) *size - ((toFloat maxx)/2) , (0.5+ (toFloat y)) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.white (C.square size)), (C.outlined C.defaultLine (C.square size))])
+  C.move ((0.5+(toFloat x)) *size - ((toFloat maxx)/2) , (0.5+ (toFloat y)) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.white (C.square size)), (C.outlined {defaultLine | color = Color.blue} (C.square size))])
  else 
-  C.move (((0.5+(toFloat x)) *size - ((toFloat maxx)/2)) , (0.5+(toFloat y)) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.black (C.square size)), (C.outlined C.defaultLine (C.square size)) ]) 
+  C.move (((0.5+(toFloat x)) *size - ((toFloat maxx)/2)) , (0.5+(toFloat y)) *size - ((toFloat maxy)/2)) (C.group [(C.filled Color.black (C.square size)), (C.outlined {defaultLine | color = Color.blue} (C.square size)) ]) 
 
 -- List.map (\w-> List.map (\v -> (v, Array.get (snd v) ((Array.get (fst v) grid))))) (List.map (\f->List.map f [0..yMax]) (List.map (\x->(\y->(x,y))) [0..xMax]))
 
