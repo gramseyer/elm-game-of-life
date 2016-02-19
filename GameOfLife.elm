@@ -2,6 +2,7 @@ module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElemen
 
 import Array
 import List
+import Debug
 
 type alias Grid = Array.Array (Array.Array Bool)
 type alias Dimensions = (Int, Int) -- (x,y)
@@ -9,7 +10,7 @@ type alias Dimensions = (Int, Int) -- (x,y)
 updateGrid : List Int -> List Int -> Grid -> Grid
 updateGrid liveToDeath deadToLife g =
     let (xMax, yMax) = getDimensions g in
-    fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g)
+    expandGrid (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g))
 
 fromListList : List (List Bool) -> Grid
 fromListList xs = Array.fromList (List.map (Array.fromList) xs)
@@ -74,6 +75,39 @@ toggleCoord (x,y) g =
         Just arr -> case Array.get y arr of
                         Nothing -> g
                         Just bool -> Array.set x (Array.set y (not bool) arr) g
+
+addColumnLeft : Grid -> Grid
+addColumnLeft g = let (xMax, yMax) = getDimensions g in
+    let newColumn = Array.repeat yMax False in
+    Array.append (Array.fromList [newColumn]) g
+
+addColumnRight : Grid -> Grid
+addColumnRight g = let (xMax, yMax) = getDimensions g in
+    let newColumn = Array.repeat yMax False in
+    Array.append g (Array.fromList [newColumn])
+
+addRowTop : Grid -> Grid
+addRowTop g = Array.map (\arr -> Array.append (Array.fromList [False]) arr) g
+
+addRowBot : Grid -> Grid
+addRowBot g = Array.map (\arr -> Array.append arr (Array.fromList [False])) g
+
+conditionalExpand : (Grid -> Grid) -> Bool -> Grid -> Grid
+conditionalExpand f bool g = if bool then f g else g
+
+fromJust : Maybe a -> a
+fromJust x = case x of
+    Just y -> y
+    Nothing -> Debug.crash "fromJust"
+
+expandGrid : Grid -> Grid
+expandGrid g = let (xMax, yMax) = getDimensions g in 
+    let left = List.member True (Array.toList (fromJust (Array.get 0 g)))
+        right = List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
+        top = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
+        bot = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g)) in
+    conditionalExpand addColumnLeft left (conditionalExpand addColumnRight right (conditionalExpand addRowTop top (conditionalExpand addRowBot bot g)))
+
 
 --Probably no longer necessary
 coordList : Dimensions -> List (List (Int, Int))
