@@ -1,4 +1,4 @@
-module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList, getDimensions) where
+module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList, getDimensions, toggleCoord) where
 
 import Array
 import List
@@ -66,6 +66,14 @@ getMax : Maybe (Int) -> Int
 getMax x = case x of
     Nothing -> 0
     Just x  -> x
+
+toggleCoord : (Int, Int) -> Grid -> Grid
+toggleCoord (x,y) g = 
+    case Array.get x g of
+        Nothing -> g
+        Just arr -> case Array.get y arr of
+                        Nothing -> g
+                        Just bool -> Array.set x (Array.set y (not bool) arr) g
 
 --Probably no longer necessary
 coordList : Dimensions -> List (List (Int, Int))

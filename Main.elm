@@ -10,7 +10,7 @@ import Array
 import Time
 import Window
 
---type alias State = (Grid, Bool) --this depends on the state of the game we're in, ie editing versus viewing mode
+type alias State = (Grid, Bool) --this depends on the state of the game we're in, ie editing versus viewing mode
 
 type alias ClickEvent = (Int, Int)
 type Event = Tick | Click (Int, Int)
@@ -25,8 +25,8 @@ getDimensions : Grid -> (Int, Int)
 getDimensions g = (Array.length g, Array.length (fromJust (Array.get 0 g)))
 
 -- view will generate a grid of squares black -> false, white -> true
-view : (Int, Int) -> Grid -> E.Element
-view (w,h) g = 
+view : (Int, Int) -> State -> E.Element
+view (w,h) (g, bool) = 
 -- if state then --if we are in viewing mode
  let (maxx, maxy) = getDimensions g
  in 
@@ -72,12 +72,15 @@ tickSignal = (Signal.map (\x-> Tick) (Time.every (Time.millisecond*500)))
 eventSignal : Signal Event
 eventSignal = (Signal.merge tickSignal (Signal.map (\(x,y)-> Click (x,y)) lastClicked.signal))
 
-upstate : Event -> Grid -> Grid
-upstate t g = 
+upstate : Event -> State -> State
+upstate t (g, running) = 
     case t of
-        Tick -> updateGrid [0,1,4,5,6,7,8] [3] g 
-        Click (x,y) -> Debug.log (toString (x,y)) g
+        Tick -> if running then (updateGrid [0,1,4,5,6,7,8] [3] g, running)
+                else (g, running)
+        Click (x,y) -> if not running then
+                        (toggleCoord (x,y) g, running)
+                        else (g, running)
 
 main : Signal E.Element
 main = Signal.map2 view Window.dimensions
- (Signal.foldp upstate blinker eventSignal)
+ (Signal.foldp upstate (gliderGun, True) eventSignal)
