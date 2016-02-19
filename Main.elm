@@ -58,7 +58,7 @@ renderUI : (Int, Int) -> State -> E.Element
 renderUI (w,h) (g,bool) = 
    let (sqsize, wc, hc) = findsqsizewh (w,h) g
    in
-   E.flow E.right ((I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (emptyGrid (getDimensions g), x)))) "Empty Grid") :: [(I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (g, not x)))) "Change Mode")])
+   E.flow E.right ((I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (g, not x)))) "Change Mode") :: [(I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (emptyGrid (getDimensions g), x)))) "Empty Grid")])
 
 fromJust : Maybe a -> a
 fromJust a = case a of 
