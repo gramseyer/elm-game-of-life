@@ -14,7 +14,7 @@ type alias UIControl = (Bool)
 type alias State = (Grid, UIControl) --this depends on the state of the game we're in, ie editing versus viewing mode
 
 type alias ClickEvent = (Int, Int)
-type Event = Tick | Click (Int, Int) | UIStateChange (UIControl -> UIControl)
+type Event = Tick | Click (Int, Int) | UIStateChange (State -> State) 
 
 lastClicked : Signal.Mailbox ClickEvent
 lastClicked = Signal.mailbox (0,0)
@@ -46,23 +46,19 @@ findsqsizewh (w,h) g =
 
 renderGrid : (Int, Int) -> State -> E.Element
 renderGrid (w,h) (g, bool) = 
--- if state then --if we are in viewing mode
  let (sqsize, width, height) = findsqsizewh (w,h) g
  in 
  --create collage of appropriate size, not doing anything intelligent here yet and fill it with squares
--- Debug.log (toString (sqsize,w,h,maxx,maxy, width, height))
  C.collage 
      width height
      ((C.filled Color.blue (C.rect (toFloat(width)) (toFloat(height)))) :: (List.concat (gridMapExtra makesquare (sqsize, width, height) g)))
--- else
-  --editing mode stuff
+
 
 renderUI : (Int, Int) -> State -> E.Element
 renderUI (w,h) (g,bool) = 
- let (sqsize, wc, hc) = findsqsizewh (w,h) g
- in
- I.button (Signal.message statechange.address (UIStateChange (\x -> not x))) "Change Mode"
-
+   let (sqsize, wc, hc) = findsqsizewh (w,h) g
+   in
+   E.flow E.right ((I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (emptyGrid (getDimensions g), x)))) "Empty Grid") :: [(I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (g, not x)))) "Change Mode")])
 
 fromJust : Maybe a -> a
 fromJust a = case a of 
@@ -96,7 +92,7 @@ upstate t (g, running) =
     case t of
         Tick -> if running then (updateGrid [0,1,4,5,6,7,8] [3] g, running)
                 else (g, running) 
-        UIStateChange f -> Debug.log (toString running) (g, f running)
+        UIStateChange f -> (f(g, running))
         Click (x,y) -> if not running then
                         (toggleCoord (x,y) g, running)
                         else (g, running)
