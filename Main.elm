@@ -37,10 +37,10 @@ view (w,h) (g, bool) =
      height = ceiling (sqsize * (toFloat maxy))
  in
  --create collage of appropriate size, not doing anything intelligent here yet and fill it with squares
- Debug.log (toString (sqsize,w,h,maxx,maxy, width, height))
+-- Debug.log (toString (sqsize,w,h,maxx,maxy, width, height))
  C.collage 
      width height
-     (List.concat (gridMapExtra makesquare (sqsize, width, height) g))
+     ((C.filled Color.blue (C.rect (toFloat(width)) (toFloat(height)))) :: (List.concat (gridMapExtra makesquare (sqsize, width, height) g)))
 -- else
   --editing mode stuff
 
@@ -68,7 +68,6 @@ makesquare ((x,y), v, (size, maxx, maxy))=
 
 tickSignal : Signal Event
 tickSignal = (Signal.map (\x-> Tick) (Time.every (Time.millisecond*500)))
-
 eventSignal : Signal Event
 eventSignal = (Signal.merge tickSignal (Signal.map (\(x,y)-> Click (x,y)) lastClicked.signal))
 
@@ -83,4 +82,4 @@ upstate t (g, running) =
 
 main : Signal E.Element
 main = Signal.map2 view Window.dimensions
- (Signal.foldp upstate (gliderGun, True) eventSignal)
+ (Signal.foldp upstate (gliderGun, False) eventSignal)
