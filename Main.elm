@@ -4,13 +4,15 @@ import PresetStarts exposing(..)
 import Graphics.Element as E
 import Graphics.Collage as C exposing(defaultLine)
 import Graphics.Input as I
+import Graphics.Input.Field as F
 import Signal
+import String exposing(toInt)
 import Color
 import Array
 import Time
 import Window
 
-type alias UIControl = (Bool)
+type alias UIControl = (Bool, (Maybe Int, Maybe Int))
 type alias State = (Grid, UIControl) --this depends on the state of the game we're in, ie editing versus viewing mode
 
 type alias ClickEvent = (Int, Int)
@@ -19,8 +21,12 @@ type Event = Tick | Click (Int, Int) | UIStateChange (State -> State)
 lastClicked : Signal.Mailbox ClickEvent
 lastClicked = Signal.mailbox (0,0)
 
+
 statechange : Signal.Mailbox Event
 statechange = Signal.mailbox (UIStateChange identity)
+
+fieldx : Signal.Mailbox F.Content
+fieldx = Signal.mailbox F.noContent
 
 getDimensions : Grid -> (Int, Int)
 getDimensions g = (Array.length g, Array.length (fromJust (Array.get 0 g)))
@@ -58,7 +64,22 @@ renderUI : (Int, Int) -> State -> E.Element
 renderUI (w,h) (g,bool) = 
    let (sqsize, wc, hc) = findsqsizewh (w,h) g
    in
-   E.flow E.right ((I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (g, not x)))) "Change Mode") :: [(I.button (Signal.message statechange.address (UIStateChange (\(g,x) -> (emptyGrid (getDimensions g), x)))) "Empty Grid")])
+   E.flow E.right ((I.button (Signal.message statechange.address (UIStateChange (\(g,(b, (x,y))) -> (g, (not b, (x,y)))))) "Change Mode") :: [(I.button (Signal.message statechange.address (UIStateChange (\(g,(x, r)) -> (emptyGrid (getDimensions g), (False, r))))) "Clear Grid"), 
+   (I.button (Signal.message statechange.address (UIStateChange (\(g,(x,r)) -> (emptyGrid (newdimensions (g,(x,r))), (False, r ))))) "New Grid")])
+
+--(F.field F.defaultStyle (\content -> (Signal.message statechange.address (UIStateChange (\(g,(b,(x,y))) -> (g,(b,(parse (content.string), y))))))) "X-Dimension") fieldx.signal])
+
+
+parse : String -> Maybe Int
+parse x = Result.toMaybe (String.toInt x)
+
+newdimensions : State -> (Int, Int)
+newdimensions (grid, (running, (x, y))) = case (x,y) of
+ (Just x', Just y') -> if x' == 0 || y' == 0 then 
+                       (getDimensions grid)
+                       else 
+                       (x',y')
+ _ -> (getDimensions grid)
 
 fromJust : Maybe a -> a
 fromJust a = case a of 
@@ -88,16 +109,16 @@ eventSignal : Signal Event
 eventSignal = (Signal.mergeMany [tickSignal, (Signal.map (\(x,y)-> Click (x,y)) lastClicked.signal), statechange.signal])
 
 upstate : Event -> State -> State
-upstate t (g, running) = 
+upstate t (g, (running, (x,y))) = 
     case t of
-        Tick -> if running then (updateGrid [0,1,4,5,6,7,8] [3] g, running)
-                else (g, running) 
-        UIStateChange f -> (f(g, running))
-        Click (x,y) -> if not running then
-                        (toggleCoord (x,y) g, running)
-                        else (g, running)
+        Tick -> if running then (updateGrid [0,1,4,5,6,7,8] [3] g, (running, (x,y)))
+                else (g, (running, (x,y))) 
+        UIStateChange f -> (f(g, (running, (x,y))))
+        Click (coorx,coory) -> if not running then
+                        (toggleCoord (coorx,coory) g, (running, (x,y)))
+                        else (g, (running, (x,y)))
 
 
 main : Signal E.Element
 main = Signal.map2 view Window.dimensions
- (Signal.foldp upstate (gliderGun, False) eventSignal)
+ (Signal.foldp upstate (gliderGun, (False, (Nothing, Nothing))) eventSignal)
