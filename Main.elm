@@ -33,12 +33,11 @@ renderYField : F.Content -> E.Element
 renderYField = F.field F.defaultStyle (Signal.message fieldy.address)  "Y-Dimension"
 
 -- view will generate a grid of squares black -> false, white -> true
-view : (Int, Int) -> State -> F.Content -> F.Content -> E.Element
-view (w,h) state contentx contenty = 
+view : (Int, Int) -> State -> E.Element -> E.Element
+view (w,h) state newGridFields = 
   let renderedUIElements = renderButtons (w,h) state in
-  let renderedXField = renderXField contentx in
-  let renderedYField = renderYField contenty in
-  let uiElements = E.flow E.right (List.append renderedUIElements [renderedXField, renderedYField]) in
+  
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields]) in
   E.flow E.down ((renderGrid (w,h) state) :: [uiElements])
 
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
@@ -73,6 +72,12 @@ renderButtons (w,h) state =
 
 getToggleButtonText : State -> String
 getToggleButtonText state = if state.running then "Stop Simulation" else "Start Simulation"
+
+renderNewGridInputFields : F.Content -> F.Content -> E.Element
+renderNewGridInputFields contentx contenty = 
+  let renderedXField = renderXField contentx in
+  let renderedYField = renderYField contenty in
+  E.flow E.down [renderedXField, renderedYField]
 
 makeSquareForm : Color.Color -> Float -> C.Form
 makeSquareForm color size = (C.group [(C.filled color (C.square size)), (C.outlined {defaultLine | color = Color.blue} (C.square size)) ]) 
@@ -113,5 +118,5 @@ upstate t state =
                         else state
 
 main : Signal E.Element
-main = Signal.map4 view Window.dimensions
- (Signal.foldp upstate startState eventSignal) fieldx.signal fieldy.signal
+main = Signal.map3 view Window.dimensions
+ (Signal.foldp upstate startState eventSignal) (Signal.map2 renderNewGridInputFields fieldx.signal fieldy.signal)

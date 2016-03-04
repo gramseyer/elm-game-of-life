@@ -37,44 +37,44 @@ getElement g (x,y) =
 
 chooseNextState : (Bool, Int) -> List Int -> List Int -> Bool
 chooseNextState (prevState, neighbors) liveToDeath deadToLife = 
-    if prevState then --alive
-        if List.member neighbors liveToDeath then
-            False
-        else
-            True
-    else --dead
-        if List.member neighbors deadToLife then
-            True
-        else
-            False
+  if prevState then --alive
+    if List.member neighbors liveToDeath then
+      False
+    else
+      True
+  else --dead
+    if List.member neighbors deadToLife then
+      True
+    else
+      False
 
 gridMap : (((Int, Int), Bool)->b) -> Grid -> List(List b)
 gridMap f g = gridMapExtra (\((x,y), bool, other)-> f ((x,y), bool)) 0 g
 
 gridMapExtra : (((Int,Int), Bool, other)->b) -> other -> Grid -> List(List b)
 gridMapExtra f goo g =
-    ((List.map 
-        (\(x, xArray) -> 
-            (List.map 
-                (\(y, bool) -> (f ((x,y), bool, goo))) 
-                (Array.toIndexedList xArray))) 
-        (Array.toIndexedList g)))
+  ((List.map 
+    (\(x, xArray) -> 
+      (List.map 
+        (\(y, bool) -> (f ((x,y), bool, goo))) 
+        (Array.toIndexedList xArray))) 
+    (Array.toIndexedList g)))
 
 getDimensions : Grid -> Dimensions
 getDimensions g = (Array.length g, getMax (List.maximum (List.map Array.length (Array.toList g))))
 
 getMax : Maybe (Int) -> Int
 getMax x = case x of
-    Nothing -> 0
-    Just x  -> x
+  Nothing -> 0
+  Just x  -> x
 
 toggleCoord : (Int, Int) -> Grid -> Grid
 toggleCoord (x,y) g = 
-    case Array.get x g of
-        Nothing -> g
-        Just arr -> case Array.get y arr of
-                        Nothing -> g
-                        Just bool -> Array.set x (Array.set y (not bool) arr) g
+  case Array.get x g of
+    Nothing -> g
+    Just arr -> case Array.get y arr of
+                    Nothing -> g
+                    Just bool -> Array.set x (Array.set y (not bool) arr) g
 
 addColumnLeft : Int -> Grid -> Grid
 addColumnLeft count g = let (xMax, yMax) = getDimensions g in
@@ -105,14 +105,15 @@ fromJust x = case x of
 
 expandGrid : Grid -> Grid
 expandGrid g = let (xMax, yMax) = getDimensions g in 
-    let left = List.member True (Array.toList (fromJust (Array.get 0 g)))
-        right = List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
-        top = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
-        bot = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g)) in
-    conditionalExpand (addColumnLeft rowsPerExpansion) left 
-        (conditionalExpand (addColumnRight rowsPerExpansion) right 
-            (conditionalExpand (addRowTop rowsPerExpansion) top 
-                (conditionalExpand (addRowBot rowsPerExpansion) bot g)))
+  let left = List.member True (Array.toList (fromJust (Array.get 0 g)))
+      right = List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
+      top = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
+      bot = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
+  in
+    g |> conditionalExpand (addColumnLeft rowsPerExpansion) left
+      |> conditionalExpand (addColumnRight rowsPerExpansion) right 
+      |> conditionalExpand (addRowTop rowsPerExpansion) top 
+      |> conditionalExpand (addRowBot rowsPerExpansion) bot 
 
 
 --Probably no longer necessary
