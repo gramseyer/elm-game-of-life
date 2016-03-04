@@ -32,11 +32,40 @@ renderXField = F.field F.defaultStyle (Signal.message fieldx.address)  "X-Dimens
 renderYField : F.Content -> E.Element
 renderYField = F.field F.defaultStyle (Signal.message fieldy.address)  "Y-Dimension"
 
+liveToDeathBoxes : List (Signal.Mailbox Bool)
+liveToDeathBoxes = List.map (\num -> if List.member num startState.liveToDeath then Signal.mailbox True else Signal.mailbox False) [0..8]
+
+deadToLifeBoxes : List (Signal.Mailbox Bool)
+deadToLifeBoxes = List.map (\num -> if List.member num startState.deadToLife then Signal.mailbox True else Signal.mailbox False) [0..8]
+
+
+renderBox : Signal.Mailbox Bool -> Bool -> E.Element
+renderBox check bool = E.container 40 40 E.middle (I.checkbox (Signal.message check.address) bool)
+
+renderBoxList : List (Signal.Mailbox Bool) -> Signal E.Element
+renderBoxList checkBoxes = let listOfSignals = (List.map ((\x -> Signal.map (renderBox x) x.signal)) checkBoxes) in
+  recursiveMerge listOfSignals
+
+recursiveMerge : List (Signal E.Element) -> Signal E.Element
+recursiveMerge signals = case signals of 
+  x::[] -> x
+  x::xs -> mergeTwoBoxes x (recursiveMerge xs)
+  [] -> Debug.crash "recursiveMerge"
+
+mergeTwoBoxes : Signal E.Element -> Signal E.Element -> Signal E.Element
+mergeTwoBoxes x y = Signal.map2 (\x->\y-> E.flow E.right [x,y]) x y
+
+liveToDeathBoxSignals : List (Signal Event)
+liveToDeathBoxSignals = List.map2 (\int-> \box -> Signal.map (\bool -> liveToDeathUpdate int bool) box.signal) [0..8] liveToDeathBoxes
+
+deadToLifeBoxSignals : List (Signal Event)
+deadToLifeBoxSignals = List.map2 (\int-> \box -> Signal.map (\bool -> deadToLifeUpdate int bool) box.signal) [0..8] deadToLifeBoxes
+
 -- view will generate a grid of squares black -> false, white -> true
-view : (Int, Int) -> State -> E.Element -> E.Element
-view (w,h) state newGridFields = 
+view : (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element
+view (w,h) state newGridFields liveToDeathChecks deadToLifeChecks = 
   let renderedUIElements = renderButtons (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (E.flow E.down [liveToDeathChecks, deadToLifeChecks])]) in
     E.flow E.down ((renderGrid (w,h) state) :: [uiElements])
 
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
@@ -102,11 +131,11 @@ clickSignal : Signal Event
 clickSignal = Signal.map (\(x,y)-> (clickUpdate (x,y)) ) lastClicked.signal
 
 eventSignal : Signal Event
-eventSignal = (Signal.mergeMany [tickSignal, clickSignal, statechange.signal, xDimensionSignal, yDimensionSignal])
+eventSignal = (Signal.mergeMany (List.append [tickSignal, clickSignal, statechange.signal, xDimensionSignal, yDimensionSignal] liveToDeathBoxSignals))
 
 upstate : Event -> State -> State
 upstate t state = (t state)
 
 main : Signal E.Element
-main = Signal.map3 view Window.dimensions
- (Signal.foldp upstate startState eventSignal) (Signal.map2 renderNewGridInputFields fieldx.signal fieldy.signal)
+main = Signal.map5 view Window.dimensions
+ (Signal.foldp upstate startState eventSignal) (Signal.map2 renderNewGridInputFields fieldx.signal fieldy.signal) (renderBoxList liveToDeathBoxes) (renderBoxList deadToLifeBoxes)
