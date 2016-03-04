@@ -26,10 +26,11 @@ newDimensions state = case state.newCoords of
                        (x',y')
  _ -> (getDimensions state.g)
 
-
 processXChange : String -> State -> State
 processXChange str state = {state | newCoords = (parse str, snd (state.newCoords)) }
 
+processYChange : String -> State -> State
+processYChange str state = {state | newCoords = (fst (state.newCoords), parse str) }
 
 parse : String -> Maybe Int
 parse x = Debug.log x (Result.toMaybe (String.toInt x))
