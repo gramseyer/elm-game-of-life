@@ -33,10 +33,13 @@ renderYField : F.Content -> E.Element
 renderYField = F.field F.defaultStyle (Signal.message fieldy.address)  "Y-Dimension"
 
 liveToDeathBoxes : List (Signal.Mailbox Bool)
-liveToDeathBoxes = List.map (\num -> if List.member num startState.liveToDeath then Signal.mailbox True else Signal.mailbox False) [0..8]
+liveToDeathBoxes = generateMailboxes startState.liveToDeath 
 
 deadToLifeBoxes : List (Signal.Mailbox Bool)
-deadToLifeBoxes = List.map (\num -> if List.member num startState.deadToLife then Signal.mailbox True else Signal.mailbox False) [0..8]
+deadToLifeBoxes = generateMailboxes startState.deadToLife
+
+generateMailboxes : List Int -> List (Signal.Mailbox Bool)
+generateMailboxes list = List.map (\num -> if List.member num list then Signal.mailbox True else Signal.mailbox False) [0..8]
 
 renderBox : Signal.Mailbox Bool -> Bool -> E.Element
 renderBox check bool = E.container 40 40 E.middle (I.checkbox (Signal.message check.address) bool)
@@ -55,10 +58,13 @@ mergeTwoBoxes : Signal E.Element -> Signal E.Element -> Signal E.Element
 mergeTwoBoxes x y = Signal.map2 (\x->\y-> E.flow E.right [x,y]) x y
 
 liveToDeathBoxSignals : List (Signal Event)
-liveToDeathBoxSignals = List.map2 (\int-> \box -> Signal.map (\bool -> liveToDeathUpdate int bool) box.signal) [0..8] liveToDeathBoxes
+liveToDeathBoxSignals = makeBoxSignals liveToDeathUpdate liveToDeathBoxes 
 
 deadToLifeBoxSignals : List (Signal Event)
-deadToLifeBoxSignals = List.map2 (\int-> \box -> Signal.map (\bool -> deadToLifeUpdate int bool) box.signal) [0..8] deadToLifeBoxes
+deadToLifeBoxSignals = makeBoxSignals deadToLifeUpdate deadToLifeBoxes 
+
+makeBoxSignals : (Int -> Bool -> State -> State) -> List (Signal.Mailbox Bool) -> List (Signal Event)
+makeBoxSignals func boxes = List.map2 (\int-> \box -> Signal.map (\bool -> func int bool) box.signal) [0..8] boxes
 
 -- view will generate a grid of squares black -> false, white -> true
 view : (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element
