@@ -76,24 +76,27 @@ toggleCoord (x,y) g =
                         Nothing -> g
                         Just bool -> Array.set x (Array.set y (not bool) arr) g
 
-addColumnLeft : Grid -> Grid
-addColumnLeft g = let (xMax, yMax) = getDimensions g in
+addColumnLeft : Int -> Grid -> Grid
+addColumnLeft count g = let (xMax, yMax) = getDimensions g in
     let newColumn = Array.repeat yMax False in
-    Array.append (Array.fromList [newColumn]) g
+    Array.append (Array.repeat count newColumn) g
 
-addColumnRight : Grid -> Grid
-addColumnRight g = let (xMax, yMax) = getDimensions g in
+addColumnRight : Int -> Grid -> Grid
+addColumnRight count g = let (xMax, yMax) = getDimensions g in
     let newColumn = Array.repeat yMax False in
-    Array.append g (Array.fromList [newColumn])
+    Array.append g (Array.repeat count newColumn)
 
-addRowTop : Grid -> Grid
-addRowTop g = Array.map (\arr -> Array.append (Array.fromList [False]) arr) g
+addRowTop : Int -> Grid -> Grid
+addRowTop count g = Array.map (\arr -> Array.append (Array.repeat count False) arr) g
 
-addRowBot : Grid -> Grid
-addRowBot g = Array.map (\arr -> Array.append arr (Array.fromList [False])) g
+addRowBot : Int -> Grid -> Grid
+addRowBot count g = Array.map (\arr -> Array.append arr (Array.repeat count False)) g
 
 conditionalExpand : (Grid -> Grid) -> Bool -> Grid -> Grid
 conditionalExpand f bool g = if bool then f g else g
+
+rowsPerExpansion : Int
+rowsPerExpansion = 3
 
 fromJust : Maybe a -> a
 fromJust x = case x of
@@ -106,7 +109,10 @@ expandGrid g = let (xMax, yMax) = getDimensions g in
         right = List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
         top = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
         bot = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g)) in
-    conditionalExpand addColumnLeft left (conditionalExpand addColumnRight right (conditionalExpand addRowTop top (conditionalExpand addRowBot bot g)))
+    conditionalExpand (addColumnLeft rowsPerExpansion) left 
+        (conditionalExpand (addColumnRight rowsPerExpansion) right 
+            (conditionalExpand (addRowTop rowsPerExpansion) top 
+                (conditionalExpand (addRowBot rowsPerExpansion) bot g)))
 
 
 --Probably no longer necessary
