@@ -38,7 +38,6 @@ liveToDeathBoxes = List.map (\num -> if List.member num startState.liveToDeath t
 deadToLifeBoxes : List (Signal.Mailbox Bool)
 deadToLifeBoxes = List.map (\num -> if List.member num startState.deadToLife then Signal.mailbox True else Signal.mailbox False) [0..8]
 
-
 renderBox : Signal.Mailbox Bool -> Bool -> E.Element
 renderBox check bool = E.container 40 40 E.middle (I.checkbox (Signal.message check.address) bool)
 
@@ -131,7 +130,7 @@ clickSignal : Signal Event
 clickSignal = Signal.map (\(x,y)-> (clickUpdate (x,y)) ) lastClicked.signal
 
 eventSignal : Signal Event
-eventSignal = (Signal.mergeMany (List.append [tickSignal, clickSignal, statechange.signal, xDimensionSignal, yDimensionSignal] liveToDeathBoxSignals))
+eventSignal = (Signal.mergeMany (List.append [tickSignal, clickSignal, statechange.signal, xDimensionSignal, yDimensionSignal] (List.append liveToDeathBoxSignals deadToLifeBoxSignals)))
 
 upstate : Event -> State -> State
 upstate t state = (t state)
