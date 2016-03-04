@@ -21,9 +21,9 @@ newGrid state=  {state | g = emptyGrid (newDimensions state)}
 newDimensions : State -> (Int, Int)
 newDimensions state = case state.newCoords of
  (Just x', Just y') -> if x' == 0 || y' == 0 then 
-                       (getDimensions state.g)
+                          (getDimensions state.g)
                        else 
-                       (x',y')
+                          (x',y')
  _ -> (getDimensions state.g)
 
 processXChange : String -> State -> State
@@ -34,3 +34,18 @@ processYChange str state = {state | newCoords = (fst (state.newCoords), parse st
 
 parse : String -> Maybe Int
 parse x = Debug.log x (Result.toMaybe (String.toInt x))
+
+tickUpdate : State -> State
+tickUpdate state = 
+  if state.running then 
+    {state | g = updateGrid [0,1,4,5,6,7,8] [3] state.g}
+  else
+    state
+
+clickUpdate : (Int, Int) -> State -> State
+clickUpdate (coorx,coory) state = 
+  if not state.running then 
+    {state | g = toggleCoord (coorx, coory) state.g}
+  else
+    state
+
