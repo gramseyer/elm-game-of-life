@@ -9,6 +9,8 @@ import Signal
 import Color
 import Array
 import Time
+import String
+import Text
 import Window
 
 type alias ClickEvent = (Int, Int)
@@ -66,11 +68,25 @@ deadToLifeBoxSignals = makeBoxSignals deadToLifeUpdate deadToLifeBoxes
 makeBoxSignals : (Int -> Bool -> State -> State) -> List (Signal.Mailbox Bool) -> List (Signal Event)
 makeBoxSignals func boxes = List.map2 (\int-> \box -> Signal.map (\bool -> func int bool) box.signal) [0..8] boxes
 
+renderText : String -> E.Element
+renderText str = E.container 100 40 E.middle (E.centered (Text.fromString str))
+
+renderGameControlPanel : E.Element -> E.Element -> E.Element
+renderGameControlPanel deadToLife liveToDeath =
+  let labels = E.flow E.right (List.map (\x-> E.container 40 40 E.middle (E.show x)) [0..8])
+      names = E.flow E.down [renderText "Neighbors", renderText "liveToDeath", renderText "deadToLife"]
+  in 
+  E.flow E.right [names, E.flow E.down  [ labels
+                                        , liveToDeath
+                                        , deadToLife
+                                        ]
+                ]
+
 -- view will generate a grid of squares black -> false, white -> true
 view : (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element
 view (w,h) state newGridFields liveToDeathChecks deadToLifeChecks = 
   let renderedUIElements = renderButtons (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (E.flow E.down [liveToDeathChecks, deadToLifeChecks])]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks)]) in
     E.flow E.down ((renderGrid (w,h) state) :: [uiElements])
 
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
