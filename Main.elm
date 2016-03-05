@@ -72,18 +72,39 @@ eventSignal = (Signal.mergeMany (List.append [  tickSignal
                                               ] 
                                               (List.append liveToDeathBoxSignals deadToLifeBoxSignals)))
 
+map6 : (a -> b -> c -> d -> e -> f -> result) 
+      -> Signal a
+      -> Signal b
+      -> Signal c
+      -> Signal d
+      -> Signal e
+      -> Signal f
+      -> Signal result
+map6 f sigA sigB sigC sigD sigE sigF = 
+  Signal.map2 (\func -> \val -> func val) (Signal.map5 f sigA sigB sigC sigD sigE) sigF
+
+newGridFieldsSignal : Signal E.Element
+newGridFieldsSignal = Signal.map2 (renderNewGridInputFields newGridFieldx newGridFieldy)
+                                      newGridFieldx.signal newGridFieldy.signal
+
+maxGridFieldsSignal : Signal E.Element
+maxGridFieldsSignal = Signal.map2 (renderMaxGridInputFields maxGridFieldx maxGridFieldy) 
+                                      maxGridFieldx.signal maxGridFieldy.signal
+
+liveToDeathBoxSignal : Signal E.Element
+liveToDeathBoxSignal = renderBoxList liveToDeathBoxes
+
+deadToLifeBoxSignal : Signal E.Element
+deadToLifeBoxSignal = renderBoxList deadToLifeBoxes
+
 upstate : Event -> State -> State
 upstate t state = (t state)
 
-map6 : (a -> b -> c -> d -> e -> f -> result) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f -> Signal result
-map6 f sigA sigB sigC sigD sigE sigF = Signal.map2 (\func -> \val -> func val) (Signal.map5 f sigA sigB sigC sigD sigE) sigF
-
-newGridFieldsSignal : Signal E.Element
-newGridFieldsSignal = (Signal.map2 (renderNewGridInputFields newGridFieldx newGridFieldy) newGridFieldx.signal newGridFieldy.signal)
-
-maxGridFieldsSignal : Signal E.Element
-maxGridFieldsSignal = (Signal.map2 (renderMaxGridInputFields maxGridFieldx maxGridFieldy) maxGridFieldx.signal maxGridFieldy.signal)
-
 main : Signal E.Element
-main = map6 (view statechange lastClicked) Window.dimensions
-  (Signal.foldp upstate startState eventSignal) newGridFieldsSignal (renderBoxList liveToDeathBoxes) (renderBoxList deadToLifeBoxes) maxGridFieldsSignal
+main = map6 (view statechange lastClicked) 
+              Window.dimensions
+              (Signal.foldp upstate startState eventSignal) 
+              newGridFieldsSignal
+              liveToDeathBoxSignal
+              deadToLifeBoxSignal
+              maxGridFieldsSignal

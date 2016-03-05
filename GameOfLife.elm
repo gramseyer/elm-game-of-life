@@ -108,7 +108,6 @@ rowsToExpandHorizontally caps grid =
     Just cap -> max (min maxRowsToExpand (cap-xMax)) 0
     Nothing -> maxRowsToExpand
 
-
 rowsToExpandVertically: (Maybe Int, Maybe Int) -> Grid -> Int
 rowsToExpandVertically caps grid =
   let (xMax, yMax) = getDimensions grid in
@@ -132,6 +131,7 @@ expandToRight g = let (xMax, yMax) = getDimensions g in
 expandToTop : Grid -> Bool
 expandToTop g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
+
 expandToBot : Grid -> Bool
 expandToBot g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))

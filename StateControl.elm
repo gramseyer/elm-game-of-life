@@ -1,10 +1,12 @@
-module StateControl (State, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate) where
+module StateControl (State, Event, ClickEvent, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate) where
 
 import GameOfLife exposing (..)
 import PresetStarts exposing (..)
 import String
 
 type alias State = {g : Grid, running : Bool, maxSize : (Maybe Int, Maybe Int), newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int}
+type alias ClickEvent = (Int, Int)
+type alias Event = (State -> State)
 
 startState : State
 startState = {g = gliderGun, running = False, maxSize = (Nothing, Nothing), newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3]}
