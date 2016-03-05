@@ -92,8 +92,8 @@ addRowTop count g = Array.map (\arr -> Array.append (Array.repeat count False) a
 addRowBot : Int -> Grid -> Grid
 addRowBot count g = Array.map (\arr -> Array.append arr (Array.repeat count False)) g
 
-conditionalExpand : (Grid -> Grid) -> Bool -> Grid -> Grid
-conditionalExpand f bool g = if bool then f g else g
+conditionalExpand : (Grid -> Grid) -> (Grid -> Bool) -> Grid -> Grid
+conditionalExpand f bool_f g = if bool_f g then f g else g
 
 rowsPerExpansion : Int
 rowsPerExpansion = 3
@@ -103,17 +103,32 @@ fromJust x = case x of
     Just y -> y
     Nothing -> Debug.crash "fromJust"
 
+expandToLeft : Grid -> Bool
+expandToLeft g = let (xMax, yMax) = getDimensions g in
+  List.member True (Array.toList (fromJust (Array.get 0 g)))
+
+expandToRight : Grid -> Bool
+expandToRight g = let (xMax, yMax) = getDimensions g in
+  List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
+
+expandToTop : Grid -> Bool
+expandToTop g = let (xMax, yMax) = getDimensions g in
+  List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
+expandToBot : Grid -> Bool
+expandToBot g = let (xMax, yMax) = getDimensions g in
+  List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
+
 expandGrid : Grid -> Grid
-expandGrid g = let (xMax, yMax) = getDimensions g in 
+expandGrid g = {-let (xMax, yMax) = getDimensions g in 
   let left = List.member True (Array.toList (fromJust (Array.get 0 g)))
       right = List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
       top = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
       bot = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
-  in
-    g |> conditionalExpand (addColumnLeft rowsPerExpansion) left
-      |> conditionalExpand (addColumnRight rowsPerExpansion) right 
-      |> conditionalExpand (addRowTop rowsPerExpansion) top 
-      |> conditionalExpand (addRowBot rowsPerExpansion) bot 
+  in -}
+    g |> conditionalExpand (addColumnLeft rowsPerExpansion) expandToLeft
+      |> conditionalExpand (addColumnRight rowsPerExpansion) expandToRight
+      |> conditionalExpand (addRowTop rowsPerExpansion) expandToTop
+      |> conditionalExpand (addRowBot rowsPerExpansion) expandToBot
 
 
 --Probably no longer necessary
