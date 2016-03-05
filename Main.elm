@@ -7,6 +7,8 @@ import Signal
 import Time
 import Window
 
+-- Mailboxes
+
 lastClicked : Signal.Mailbox ClickEvent
 lastClicked = Signal.mailbox (0,0)
 
@@ -33,6 +35,8 @@ deadToLifeBoxes = generateMailboxes startState.deadToLife
 
 generateMailboxes : List Int -> List (Signal.Mailbox Bool)
 generateMailboxes list = List.map (\num -> if List.member num list then Signal.mailbox True else Signal.mailbox False) [0..8]
+
+-- Event Signals
 
 liveToDeathBoxSignals : List (Signal Event)
 liveToDeathBoxSignals = makeBoxSignals liveToDeathUpdate liveToDeathBoxes 
@@ -72,16 +76,7 @@ eventSignal = (Signal.mergeMany (List.append [  tickSignal
                                               ] 
                                               (List.append liveToDeathBoxSignals deadToLifeBoxSignals)))
 
-map6 : (a -> b -> c -> d -> e -> f -> result) 
-      -> Signal a
-      -> Signal b
-      -> Signal c
-      -> Signal d
-      -> Signal e
-      -> Signal f
-      -> Signal result
-map6 f sigA sigB sigC sigD sigE sigF = 
-  Signal.map2 (\func -> \val -> func val) (Signal.map5 f sigA sigB sigC sigD sigE) sigF
+-- UI Element Signals
 
 newGridFieldsSignal : Signal E.Element
 newGridFieldsSignal = Signal.map2 (renderNewGridInputFields newGridFieldx newGridFieldy)
@@ -96,6 +91,19 @@ liveToDeathBoxSignal = renderBoxList liveToDeathBoxes
 
 deadToLifeBoxSignal : Signal E.Element
 deadToLifeBoxSignal = renderBoxList deadToLifeBoxes
+
+-- Combining Signals
+
+map6 : (a -> b -> c -> d -> e -> f -> result) 
+      -> Signal a
+      -> Signal b
+      -> Signal c
+      -> Signal d
+      -> Signal e
+      -> Signal f
+      -> Signal result
+map6 f sigA sigB sigC sigD sigE sigF = 
+  Signal.map2 (\func -> \val -> func val) (Signal.map5 f sigA sigB sigC sigD sigE) sigF
 
 upstate : Event -> State -> State
 upstate t state = (t state)
