@@ -1,6 +1,7 @@
 module Main where
 import StateControl exposing (..)
 import GameOfLife exposing (..)
+import Render exposing (..)
 import Graphics.Element as E
 import Graphics.Collage as C exposing(defaultLine)
 import Graphics.Input as I
@@ -13,8 +14,6 @@ import String
 import Text
 import Window
 
-type alias ClickEvent = (Int, Int)
-type alias Event = (State -> State)
 
 lastClicked : Signal.Mailbox ClickEvent
 lastClicked = Signal.mailbox (0,0)
@@ -28,12 +27,6 @@ fieldx = Signal.mailbox F.noContent
 fieldy : Signal.Mailbox F.Content
 fieldy = Signal.mailbox F.noContent
 
-renderXField : F.Content -> E.Element
-renderXField = F.field F.defaultStyle (Signal.message fieldx.address)  "X-Dimension"
-
-renderYField : F.Content -> E.Element
-renderYField = F.field F.defaultStyle (Signal.message fieldy.address)  "Y-Dimension"
-
 liveToDeathBoxes : List (Signal.Mailbox Bool)
 liveToDeathBoxes = generateMailboxes startState.liveToDeath 
 
@@ -42,6 +35,17 @@ deadToLifeBoxes = generateMailboxes startState.deadToLife
 
 generateMailboxes : List Int -> List (Signal.Mailbox Bool)
 generateMailboxes list = List.map (\num -> if List.member num list then Signal.mailbox True else Signal.mailbox False) [0..8]
+
+liveToDeathBoxSignals : List (Signal Event)
+liveToDeathBoxSignals = makeBoxSignals liveToDeathUpdate liveToDeathBoxes 
+
+deadToLifeBoxSignals : List (Signal Event)
+deadToLifeBoxSignals = makeBoxSignals deadToLifeUpdate deadToLifeBoxes 
+
+makeBoxSignals : (Int -> Bool -> State -> State) -> List (Signal.Mailbox Bool) -> List (Signal Event)
+makeBoxSignals func boxes = List.map2 (\int-> \box -> Signal.map (\bool -> func int bool) box.signal) [0..8] boxes
+
+{-
 
 renderBox : Signal.Mailbox Bool -> Bool -> E.Element
 renderBox check bool = E.container 40 40 E.middle (I.checkbox (Signal.message check.address) bool)
@@ -139,6 +143,10 @@ makesquare ((x,y), v, (size, maxx, maxy)) =
   else 
     C.move coords (makeFormIntoClickable x y (round size) (makeSquareForm Color.black size))
 
+
+
+-}
+
 xDimensionSignal : Signal Event
 xDimensionSignal = (Signal.map (\content ->  (processXChange content.string)) fieldx.signal)
 
@@ -158,5 +166,5 @@ upstate : Event -> State -> State
 upstate t state = (t state)
 
 main : Signal E.Element
-main = Signal.map5 view Window.dimensions
- (Signal.foldp upstate startState eventSignal) (Signal.map2 renderNewGridInputFields fieldx.signal fieldy.signal) (renderBoxList liveToDeathBoxes) (renderBoxList deadToLifeBoxes)
+main = Signal.map5 (view statechange lastClicked) Window.dimensions
+ (Signal.foldp upstate startState eventSignal) (Signal.map2 (renderNewGridInputFields fieldx fieldy) fieldx.signal fieldy.signal) (renderBoxList liveToDeathBoxes) (renderBoxList deadToLifeBoxes)

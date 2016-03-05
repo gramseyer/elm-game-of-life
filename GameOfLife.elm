@@ -119,21 +119,13 @@ expandToBot g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
 
 expandGrid : Grid -> Grid
-expandGrid g = {-let (xMax, yMax) = getDimensions g in 
-  let left = List.member True (Array.toList (fromJust (Array.get 0 g)))
-      right = List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
-      top = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
-      bot = List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
-  in -}
+expandGrid g = 
     g |> conditionalExpand (addColumnLeft rowsPerExpansion) expandToLeft
       |> conditionalExpand (addColumnRight rowsPerExpansion) expandToRight
       |> conditionalExpand (addRowTop rowsPerExpansion) expandToTop
       |> conditionalExpand (addRowBot rowsPerExpansion) expandToBot
-
-
+  
 --Probably no longer necessary
 coordList : Dimensions -> List (List (Int, Int))
 coordList (xMax, yMax) = 
     (List.map (\f->List.map f [0..yMax]) (List.map (\x->(\y->(x,y))) [0..xMax]))
-
-
