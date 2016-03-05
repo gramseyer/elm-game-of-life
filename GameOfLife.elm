@@ -7,10 +7,10 @@ import Debug
 type alias Grid = Array.Array (Array.Array Bool)
 type alias Dimensions = (Int, Int) -- (x,y)
 
-updateGrid : List Int -> List Int -> Grid -> Grid
-updateGrid liveToDeath deadToLife g =
+updateGrid : (Maybe Int, Maybe Int) -> List Int -> List Int -> Grid -> Grid
+updateGrid caps liveToDeath deadToLife g =
     let (xMax, yMax) = getDimensions g in
-    expandGrid (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g))
+    expandGrid caps (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g))
 
 fromListList : List (List Bool) -> Grid
 fromListList xs = Array.fromList (List.map (Array.fromList) xs)
@@ -92,11 +92,29 @@ addRowTop count g = Array.map (\arr -> Array.append (Array.repeat count False) a
 addRowBot : Int -> Grid -> Grid
 addRowBot count g = Array.map (\arr -> Array.append arr (Array.repeat count False)) g
 
-conditionalExpand : (Grid -> Grid) -> (Grid -> Bool) -> Grid -> Grid
-conditionalExpand f bool_f g = if bool_f g then f g else g
+conditionalExpand : (Int -> Grid -> Grid) -> ((Maybe Int, Maybe Int) -> Grid -> Int) -> (Grid -> Bool) -> (Maybe Int, Maybe Int) -> Grid -> Grid
+conditionalExpand expand_f cap_f condition_f state g = 
+  if condition_f g then
+    expand_f (cap_f state g) g
+  else g
 
-rowsPerExpansion : Int
-rowsPerExpansion = 3
+maxRowsToExpand : Int
+maxRowsToExpand = 3
+
+rowsToExpandHorizontally: (Maybe Int, Maybe Int) -> Grid -> Int
+rowsToExpandHorizontally caps grid =
+  let (xMax, yMax) = getDimensions grid in
+  case fst (caps) of 
+    Just cap -> max (min maxRowsToExpand (cap-xMax)) 0
+    Nothing -> maxRowsToExpand
+
+
+rowsToExpandVertically: (Maybe Int, Maybe Int) -> Grid -> Int
+rowsToExpandVertically caps grid =
+  let (xMax, yMax) = getDimensions grid in
+  case snd (caps) of 
+    Just cap -> max (min maxRowsToExpand (cap-yMax)) 0
+    Nothing -> maxRowsToExpand
 
 fromJust : Maybe a -> a
 fromJust x = case x of
@@ -118,13 +136,13 @@ expandToBot : Grid -> Bool
 expandToBot g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
 
-expandGrid : Grid -> Grid
-expandGrid g = 
-    g |> conditionalExpand (addColumnLeft rowsPerExpansion) expandToLeft
-      |> conditionalExpand (addColumnRight rowsPerExpansion) expandToRight
-      |> conditionalExpand (addRowTop rowsPerExpansion) expandToTop
-      |> conditionalExpand (addRowBot rowsPerExpansion) expandToBot
-  
+expandGrid : (Maybe Int, Maybe Int) -> Grid -> Grid
+expandGrid caps g = 
+    g |> conditionalExpand addColumnLeft rowsToExpandHorizontally expandToLeft caps
+      |> conditionalExpand addColumnRight rowsToExpandHorizontally expandToRight caps
+      |> conditionalExpand addRowTop rowsToExpandVertically expandToTop caps
+      |> conditionalExpand addRowBot rowsToExpandVertically expandToBot caps
+
 --Probably no longer necessary
 coordList : Dimensions -> List (List (Int, Int))
 coordList (xMax, yMax) = 

@@ -1,4 +1,4 @@
-module Render (ClickEvent, Event, view, renderBoxList, renderNewGridInputFields) where
+module Render (ClickEvent, Event, view, renderBoxList, renderNewGridInputFields, renderMaxGridInputFields) where
 
 import StateControl exposing (..)
 import GameOfLife exposing (..)
@@ -41,17 +41,18 @@ renderGameControlPanel deadToLife liveToDeath =
   let labels = E.flow E.right (List.map (\x-> E.container 40 40 E.middle (E.show x)) [0..8])
       names = E.flow E.down [renderText "Neighbors", renderText "liveToDeath", renderText "deadToLife"]
   in 
-  E.flow E.right [names, E.flow E.down  [ labels
-                                        , liveToDeath
-                                        , deadToLife
-                                        ]
+  E.flow E.right [  names
+                  , E.flow E.down [ labels
+                                  , liveToDeath
+                                  , deadToLife
+                                  ]
                 ]
 
 -- view will generate a grid of squares black -> false, white -> true
-view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element
-view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks = 
+view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element
+view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields = 
   let renderedUIElements = renderButtons statechange (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks)]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields]) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
@@ -85,18 +86,18 @@ getToggleButtonText state = if state.running then "Stop Simulation" else "Start 
 
 renderNewGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
 renderNewGridInputFields fieldX fieldY contentx contenty = 
-  let renderedXField = renderField fieldX "X-Dimension" contentx in
-  let renderedYField = renderField fieldY "Y-Dimension" contenty in
+  let renderedXField = renderField fieldX "New X-Dimension" contentx in
+  let renderedYField = renderField fieldY "New Y-Dimension" contenty in
+  E.flow E.down [renderedXField, renderedYField]
+
+renderMaxGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
+renderMaxGridInputFields fieldX fieldY contentX contentY = 
+  let renderedXField = renderField fieldX "Max X-Dimension" contentX in
+  let renderedYField = renderField fieldY "Max Y-Dimension" contentY in
   E.flow E.down [renderedXField, renderedYField]
 
 renderField : Signal.Mailbox F.Content -> String -> F.Content -> E.Element
 renderField field defaultString = F.field F.defaultStyle (Signal.message field.address) defaultString
-
---renderXField : F.Content -> E.Element
---renderXField = F.field F.defaultStyle (Signal.message fieldx.address)  "X-Dimension"
-
---renderYField : F.Content -> E.Element
---renderYField = F.field F.defaultStyle (Signal.message fieldy.address)  "Y-Dimension"
 
 makeSquareForm : Color.Color -> Float -> C.Form
 makeSquareForm color size = (C.group [(C.filled color (C.square size)), (C.outlined {defaultLine | color = Color.blue} (C.square size)) ]) 

@@ -1,13 +1,13 @@
-module StateControl (State, startState, changeMode, clearGrid, newGrid, processXChange, processYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate) where
+module StateControl (State, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate) where
 
 import GameOfLife exposing (..)
 import PresetStarts exposing (..)
 import String
 
-type alias State = {g : Grid, running : Bool, newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int}
+type alias State = {g : Grid, running : Bool, maxSize : (Maybe Int, Maybe Int), newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int}
 
 startState : State
-startState = {g = gliderGun, running = False, newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3]}
+startState = {g = gliderGun, running = False, maxSize = (Nothing, Nothing), newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3]}
 
 changeMode : State -> State
 changeMode state = { state |  running = not (state.running) } 
@@ -26,11 +26,18 @@ newDimensions state = case state.newCoords of
                           (x',y')
   _ -> (getDimensions state.g)
 
-processXChange : String -> State -> State
-processXChange str state = {state | newCoords = (parse str, snd (state.newCoords)) }
+processNewXChange : String -> State -> State
+processNewXChange str state = {state | newCoords = (parse str, snd (state.newCoords)) }
 
-processYChange : String -> State -> State
-processYChange str state = {state | newCoords = (fst (state.newCoords), parse str) }
+processNewYChange : String -> State -> State
+processNewYChange str state = {state | newCoords = (fst (state.newCoords), parse str) }
+
+processMaxXChange : String -> State -> State
+processMaxXChange str state = {state | maxSize = (parse str, snd (state.maxSize)) }
+
+processMaxYChange : String -> State -> State
+processMaxYChange str state = {state | maxSize = (fst (state.maxSize), parse str) }
+
 
 parse : String -> Maybe Int
 parse x = Debug.log x (Result.toMaybe (String.toInt x))
@@ -38,7 +45,7 @@ parse x = Debug.log x (Result.toMaybe (String.toInt x))
 tickUpdate : State -> State
 tickUpdate state = 
   if state.running then 
-    {state | g = updateGrid state.liveToDeath state.deadToLife state.g}
+    {state | g = updateGrid state.maxSize state.liveToDeath state.deadToLife state.g}
   else
     state
 
@@ -78,7 +85,3 @@ deadToLifeUpdate val bool state =
       {state | deadToLife = List.filterMap (\x-> if x==val then Nothing else Just x) state.deadToLife}
     else
       state
-
-
-
-

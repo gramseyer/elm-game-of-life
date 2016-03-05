@@ -13,11 +13,17 @@ lastClicked = Signal.mailbox (0,0)
 statechange : Signal.Mailbox Event
 statechange = Signal.mailbox (identity)
 
-fieldx : Signal.Mailbox F.Content
-fieldx = Signal.mailbox F.noContent
+newGridFieldx : Signal.Mailbox F.Content
+newGridFieldx = Signal.mailbox F.noContent
 
-fieldy : Signal.Mailbox F.Content
-fieldy = Signal.mailbox F.noContent
+newGridFieldy : Signal.Mailbox F.Content
+newGridFieldy = Signal.mailbox F.noContent
+
+maxGridFieldx : Signal.Mailbox F.Content
+maxGridFieldx = Signal.mailbox F.noContent
+
+maxGridFieldy : Signal.Mailbox F.Content
+maxGridFieldy = Signal.mailbox F.noContent
 
 liveToDeathBoxes : List (Signal.Mailbox Bool)
 liveToDeathBoxes = generateMailboxes startState.liveToDeath 
@@ -37,11 +43,17 @@ deadToLifeBoxSignals = makeBoxSignals deadToLifeUpdate deadToLifeBoxes
 makeBoxSignals : (Int -> Bool -> State -> State) -> List (Signal.Mailbox Bool) -> List (Signal Event)
 makeBoxSignals func boxes = List.map2 (\int-> \box -> Signal.map (\bool -> func int bool) box.signal) [0..8] boxes
 
-xDimensionSignal : Signal Event
-xDimensionSignal = (Signal.map (\content ->  (processXChange content.string)) fieldx.signal)
+newGridXDimensionSignal : Signal Event
+newGridXDimensionSignal = (Signal.map (\content ->  (processNewXChange content.string)) newGridFieldx.signal)
 
-yDimensionSignal : Signal Event
-yDimensionSignal = (Signal.map (\content ->  (processYChange content.string)) fieldy.signal)
+newGridYDimensionSignal : Signal Event
+newGridYDimensionSignal = (Signal.map (\content ->  (processNewYChange content.string)) newGridFieldy.signal)
+
+maxGridXDimensionSignal : Signal Event
+maxGridXDimensionSignal = (Signal.map (\content ->  (processMaxXChange content.string)) maxGridFieldx.signal)
+
+maxGridYDimensionSignal : Signal Event
+maxGridYDimensionSignal = (Signal.map (\content ->  (processMaxYChange content.string)) maxGridFieldy.signal)
 
 tickSignal : Signal Event
 tickSignal = Signal.map (\x-> tickUpdate) (Time.every (Time.millisecond*500))
@@ -50,11 +62,28 @@ clickSignal : Signal Event
 clickSignal = Signal.map (\(x,y)-> (clickUpdate (x,y)) ) lastClicked.signal
 
 eventSignal : Signal Event
-eventSignal = (Signal.mergeMany (List.append [tickSignal, clickSignal, statechange.signal, xDimensionSignal, yDimensionSignal] (List.append liveToDeathBoxSignals deadToLifeBoxSignals)))
+eventSignal = (Signal.mergeMany (List.append [  tickSignal
+                                              , clickSignal
+                                              , statechange.signal
+                                              , newGridXDimensionSignal
+                                              , newGridYDimensionSignal
+                                              , maxGridXDimensionSignal
+                                              , maxGridYDimensionSignal
+                                              ] 
+                                              (List.append liveToDeathBoxSignals deadToLifeBoxSignals)))
 
 upstate : Event -> State -> State
 upstate t state = (t state)
 
+map6 : (a -> b -> c -> d -> e -> f -> result) -> Signal a -> Signal b -> Signal c -> Signal d -> Signal e -> Signal f -> Signal result
+map6 f sigA sigB sigC sigD sigE sigF = Signal.map2 (\func -> \val -> func val) (Signal.map5 f sigA sigB sigC sigD sigE) sigF
+
+newGridFieldsSignal : Signal E.Element
+newGridFieldsSignal = (Signal.map2 (renderNewGridInputFields newGridFieldx newGridFieldy) newGridFieldx.signal newGridFieldy.signal)
+
+maxGridFieldsSignal : Signal E.Element
+maxGridFieldsSignal = (Signal.map2 (renderMaxGridInputFields maxGridFieldx maxGridFieldy) maxGridFieldx.signal maxGridFieldy.signal)
+
 main : Signal E.Element
-main = Signal.map5 (view statechange lastClicked) Window.dimensions
- (Signal.foldp upstate startState eventSignal) (Signal.map2 (renderNewGridInputFields fieldx fieldy) fieldx.signal fieldy.signal) (renderBoxList liveToDeathBoxes) (renderBoxList deadToLifeBoxes)
+main = map6 (view statechange lastClicked) Window.dimensions
+  (Signal.foldp upstate startState eventSignal) newGridFieldsSignal (renderBoxList liveToDeathBoxes) (renderBoxList deadToLifeBoxes) maxGridFieldsSignal
