@@ -93,10 +93,10 @@ addColumnRight count g = let (xMax, yMax) = getDimensions g in
       g
 
 addRowBot : Int -> Grid -> Grid
-addRowBot count g = Debug.log "bot" (Array.map (\arr -> Array.append (Array.repeat count False) arr) g)
+addRowBot count g = Array.map (\arr -> Array.append (Array.repeat count False) arr) g
 
 addRowTop : Int -> Grid -> Grid
-addRowTop count g = Debug.log "top" (Array.map (\arr -> Debug.log "appended" (Array.append (Debug.log "Array before" arr) (Debug.log "appending" (Array.repeat count False)))) (Debug.log "grid before" g))
+addRowTop count g = Array.map (\arr -> Array.append arr (Array.repeat count False)) g
 
 conditionalExpand : (Int -> Grid -> Grid) 
                   -> ((Maybe Int, Maybe Int)-> Grid -> Int)
@@ -106,7 +106,7 @@ conditionalExpand : (Int -> Grid -> Grid)
                   -> Grid
 conditionalExpand expand_f cap_f condition_f state g = 
   if condition_f g then
-    Debug.log "expanded" (expand_f (Debug.log "expansion" (cap_f state g)) g)
+    expand_f (cap_f state g) g
   else g
 
 maxRowsToExpand : Int

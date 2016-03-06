@@ -27,6 +27,9 @@ maxGridFieldx = Signal.mailbox F.noContent
 maxGridFieldy : Signal.Mailbox F.Content
 maxGridFieldy = Signal.mailbox F.noContent
 
+saveGridNameField : Signal.Mailbox F.Content
+saveGridNameField = Signal.mailbox F.noContent
+
 liveToDeathBoxes : List (Signal.Mailbox Bool)
 liveToDeathBoxes = generateMailboxes startState.liveToDeath 
 
@@ -59,6 +62,9 @@ maxGridXDimensionSignal = (Signal.map (\content ->  (processMaxXChange content.s
 maxGridYDimensionSignal : Signal Event
 maxGridYDimensionSignal = (Signal.map (\content ->  (processMaxYChange content.string)) maxGridFieldy.signal)
 
+saveGridNameEventSignal : Signal Event
+saveGridNameEventSignal = (Signal.map (\content -> (storeSaveStringUpdate content.string)) saveGridNameField.signal)
+
 tickSignal : Signal Event
 tickSignal = Signal.map (\x-> tickUpdate) (Time.every (Time.millisecond*500))
 
@@ -73,6 +79,7 @@ eventSignal = (Signal.mergeMany (List.append [  tickSignal
                                               , newGridYDimensionSignal
                                               , maxGridXDimensionSignal
                                               , maxGridYDimensionSignal
+                                              , saveGridNameEventSignal
                                               ] 
                                               (List.append liveToDeathBoxSignals deadToLifeBoxSignals)))
 
@@ -92,27 +99,32 @@ liveToDeathBoxSignal = renderBoxList liveToDeathBoxes
 deadToLifeBoxSignal : Signal E.Element
 deadToLifeBoxSignal = renderBoxList deadToLifeBoxes
 
+saveGridNameElementSignal : Signal E.Element
+saveGridNameElementSignal = Signal.map (renderField saveGridNameField "Save Grid As") saveGridNameField.signal
+
 -- Combining Signals
 
-map6 : (a -> b -> c -> d -> e -> f -> result) 
+map7 : (a -> b -> c -> d -> e -> f -> g -> result) 
       -> Signal a
       -> Signal b
       -> Signal c
       -> Signal d
       -> Signal e
       -> Signal f
+      -> Signal g
       -> Signal result
-map6 f sigA sigB sigC sigD sigE sigF = 
-  Signal.map2 (\func -> \val -> func val) (Signal.map5 f sigA sigB sigC sigD sigE) sigF
+map7 f sigA sigB sigC sigD sigE sigF sigG = 
+  Signal.map3 (\func -> \val1 ->\val2 -> func val1 val2) (Signal.map5 f sigA sigB sigC sigD sigE) sigF sigG
 
 upstate : Event -> State -> State
 upstate t state = (t state)
 
 main : Signal E.Element
-main = map6 (view statechange lastClicked) 
+main = map7 (view statechange lastClicked) 
               Window.dimensions
               (Signal.foldp upstate startState eventSignal) 
               newGridFieldsSignal
               liveToDeathBoxSignal
               deadToLifeBoxSignal
               maxGridFieldsSignal
+              saveGridNameElementSignal

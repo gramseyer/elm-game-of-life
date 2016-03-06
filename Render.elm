@@ -1,4 +1,4 @@
-module Render (view, renderBoxList, renderNewGridInputFields, renderMaxGridInputFields) where
+module Render (view, renderBoxList, renderNewGridInputFields, renderMaxGridInputFields, renderField) where
 
 import StateControl exposing (..)
 import GameOfLife exposing (..)
@@ -15,10 +15,10 @@ import Text
 import Window
 
 -- view will generate a grid of squares black -> false, white -> true
-view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element
-view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields = 
+view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element -> E.Element
+view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields saveGridNameField = 
   let renderedUIElements = renderButtons statechange (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields, (renderDropdown statechange state)]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields, (renderDropdown statechange state), saveGridNameField, (I.button (Signal.message statechange.address saveGrid) "Save Grid")]) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
@@ -90,7 +90,7 @@ renderButtons : Signal.Mailbox Event -> (Int, Int) -> State -> List E.Element
 renderButtons statechange (w,h) state = 
     [ (I.button (Signal.message statechange.address changeMode) (getToggleButtonText state))
     , (I.button (Signal.message statechange.address clearGrid) "Clear Grid")
-    , (I.button (Signal.message statechange.address newGrid) "New Grid") 
+    , (I.button (Signal.message statechange.address newGrid) "New Grid")
     ]
 
 getToggleButtonText : State -> String
@@ -114,5 +114,5 @@ renderField field defaultString = F.field F.defaultStyle (Signal.message field.a
 renderDropdown : Signal.Mailbox Event -> State -> E.Element
 renderDropdown statechange state = 
   I.dropDown (Signal.message statechange.address) 
-    (("",        identity) ::
+    (("Load Grid",        identity) ::
       (List.map (\(str, grid) -> (str, (loadGridUpdate str))) state.savedGrids))

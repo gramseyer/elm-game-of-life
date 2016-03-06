@@ -1,15 +1,15 @@
-module StateControl (State, Event, ClickEvent, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate, loadGridUpdate) where
+module StateControl (State, Event, ClickEvent, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate, loadGridUpdate, storeSaveStringUpdate, saveGrid) where
 
 import GameOfLife exposing (..)
 import PresetStarts exposing (..)
 import String
 
-type alias State = {g : Grid, running : Bool, maxSize : (Maybe Int, Maybe Int), newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int, savedGrids : List (String, Grid)}
+type alias State = {g : Grid, running : Bool, maxSize : (Maybe Int, Maybe Int), newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int, savedGrids : List (String, Grid), saveNameString : String}
 type alias ClickEvent = (Int, Int)
 type alias Event = (State -> State)
 
 startState : State
-startState = {g = gliderGun, running = False, maxSize = (Nothing, Nothing), newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3], savedGrids = [("Glider Gun", gliderGun)]}
+startState = {g = gliderGun, running = False, maxSize = (Nothing, Nothing), newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3], savedGrids = [("Glider Gun", gliderGun)], saveNameString = ""}
 
 changeMode : State -> State
 changeMode state = { state |  running = not (state.running) } 
@@ -89,12 +89,22 @@ deadToLifeUpdate val bool state =
       state
 
 getSavedState : State -> String -> Grid
-getSavedState state str = getSavedStateFromList str state.savedGrids
+getSavedState state str = case getSavedStateFromList str state.savedGrids of
+  Just a -> a
+  Nothing -> Debug.crash "getSavedState"
 
-getSavedStateFromList : String -> List (String, a) -> a
+getSavedStateFromList : String -> List (String, a) -> Maybe a
 getSavedStateFromList str list = case list of
-  [] -> Debug.crash "getSavedStateFromList"
-  (str2, a)::list' -> if str == str2 then a else (getSavedStateFromList str list')
+  [] -> Nothing
+  (str2, a)::list' -> if str == str2 then Just a else (getSavedStateFromList str list')
 
 loadGridUpdate : String -> State -> State
 loadGridUpdate str state = Debug.log "foobar" { state | g = getSavedState state str, running=False}
+
+storeSaveStringUpdate : String -> State -> State
+storeSaveStringUpdate str state = { state | saveNameString = str}
+
+saveGrid : State -> State
+saveGrid state = case getSavedStateFromList state.saveNameString state.savedGrids of
+  Nothing -> { state | savedGrids = (state.saveNameString, state.g) :: state.savedGrids}
+  Just a -> state
