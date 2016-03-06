@@ -1,24 +1,24 @@
-module StateControl (State, Event, ClickEvent, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate) where
+module StateControl (State, Event, ClickEvent, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate, loadGridUpdate) where
 
 import GameOfLife exposing (..)
 import PresetStarts exposing (..)
 import String
 
-type alias State = {g : Grid, running : Bool, maxSize : (Maybe Int, Maybe Int), newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int}
+type alias State = {g : Grid, running : Bool, maxSize : (Maybe Int, Maybe Int), newCoords : (Maybe Int, Maybe Int), liveToDeath : List Int, deadToLife : List Int, savedGrids : List (String, Grid)}
 type alias ClickEvent = (Int, Int)
 type alias Event = (State -> State)
 
 startState : State
-startState = {g = gliderGun, running = False, maxSize = (Nothing, Nothing), newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3]}
+startState = {g = gliderGun, running = False, maxSize = (Nothing, Nothing), newCoords = (Nothing, Nothing), liveToDeath = [0,1,4,5,6,7,8], deadToLife = [3], savedGrids = [("Glider Gun", gliderGun)]}
 
 changeMode : State -> State
 changeMode state = { state |  running = not (state.running) } 
 
 clearGrid : State -> State
-clearGrid state =  {state | g = emptyGrid (getDimensions state.g) } 
+clearGrid state =  {state | g = emptyGrid (getDimensions state.g) , running = False} 
 
 newGrid : State -> State
-newGrid state=  {state | g = emptyGrid (newDimensions state)}
+newGrid state=  {state | g = emptyGrid (newDimensions state), running = False}
 
 newDimensions : State -> (Int, Int)
 newDimensions state = case state.newCoords of
@@ -87,3 +87,14 @@ deadToLifeUpdate val bool state =
       {state | deadToLife = List.filterMap (\x-> if x==val then Nothing else Just x) state.deadToLife}
     else
       state
+
+getSavedState : State -> String -> Grid
+getSavedState state str = getSavedStateFromList str state.savedGrids
+
+getSavedStateFromList : String -> List (String, a) -> a
+getSavedStateFromList str list = case list of
+  [] -> Debug.crash "getSavedStateFromList"
+  (str2, a)::list' -> if str == str2 then a else (getSavedStateFromList str list')
+
+loadGridUpdate : String -> State -> State
+loadGridUpdate str state = Debug.log "foobar" { state | g = getSavedState state str, running=False}

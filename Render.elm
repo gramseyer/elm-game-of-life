@@ -18,7 +18,7 @@ import Window
 view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element
 view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields = 
   let renderedUIElements = renderButtons statechange (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields, (renderDropdown statechange state)]) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
@@ -110,3 +110,9 @@ renderMaxGridInputFields fieldX fieldY contentX contentY =
 
 renderField : Signal.Mailbox F.Content -> String -> F.Content -> E.Element
 renderField field defaultString = F.field F.defaultStyle (Signal.message field.address) defaultString
+
+renderDropdown : Signal.Mailbox Event -> State -> E.Element
+renderDropdown statechange state = 
+  I.dropDown (Signal.message statechange.address) 
+    (("",        identity) ::
+      (List.map (\(str, grid) -> (str, (loadGridUpdate str))) state.savedGrids))

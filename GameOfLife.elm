@@ -79,23 +79,34 @@ toggleCoord (x,y) g =
 addColumnLeft : Int -> Grid -> Grid
 addColumnLeft count g = let (xMax, yMax) = getDimensions g in
     let newColumn = Array.repeat yMax False in
-    Array.append (Array.repeat count newColumn) g
+    if count > 0 then
+      Array.append (Array.fromList [newColumn]) (addColumnLeft (count-1) g) 
+    else
+      g
 
 addColumnRight : Int -> Grid -> Grid
 addColumnRight count g = let (xMax, yMax) = getDimensions g in
     let newColumn = Array.repeat yMax False in
-    Array.append g (Array.repeat count newColumn)
-
-addRowTop : Int -> Grid -> Grid
-addRowTop count g = Array.map (\arr -> Array.append (Array.repeat count False) arr) g
+    if count > 0 then
+      Array.append (addColumnRight (count-1) g) (Array.fromList [newColumn])
+    else 
+      g
 
 addRowBot : Int -> Grid -> Grid
-addRowBot count g = Array.map (\arr -> Array.append arr (Array.repeat count False)) g
+addRowBot count g = Debug.log "bot" (Array.map (\arr -> Array.append (Array.repeat count False) arr) g)
 
-conditionalExpand : (Int -> Grid -> Grid) -> ((Maybe Int, Maybe Int) -> Grid -> Int) -> (Grid -> Bool) -> (Maybe Int, Maybe Int) -> Grid -> Grid
+addRowTop : Int -> Grid -> Grid
+addRowTop count g = Debug.log "top" (Array.map (\arr -> Debug.log "appended" (Array.append (Debug.log "Array before" arr) (Debug.log "appending" (Array.repeat count False)))) (Debug.log "grid before" g))
+
+conditionalExpand : (Int -> Grid -> Grid) 
+                  -> ((Maybe Int, Maybe Int)-> Grid -> Int)
+                  -> (Grid -> Bool)
+                  -> (Maybe Int, Maybe Int)
+                  -> Grid
+                  -> Grid
 conditionalExpand expand_f cap_f condition_f state g = 
   if condition_f g then
-    expand_f (cap_f state g) g
+    Debug.log "expanded" (expand_f (Debug.log "expansion" (cap_f state g)) g)
   else g
 
 maxRowsToExpand : Int
@@ -128,20 +139,21 @@ expandToRight : Grid -> Bool
 expandToRight g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (fromJust (Array.get (xMax-1) g)))
 
-expandToTop : Grid -> Bool
-expandToTop g = let (xMax, yMax) = getDimensions g in
-  List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
-
 expandToBot : Grid -> Bool
 expandToBot g = let (xMax, yMax) = getDimensions g in
+  List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get 0 arr))) g))
+
+expandToTop : Grid -> Bool
+expandToTop g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
 
 expandGrid : (Maybe Int, Maybe Int) -> Grid -> Grid
 expandGrid caps g = 
     g |> conditionalExpand addColumnLeft rowsToExpandHorizontally expandToLeft caps
       |> conditionalExpand addColumnRight rowsToExpandHorizontally expandToRight caps
-      |> conditionalExpand addRowTop rowsToExpandVertically expandToTop caps
       |> conditionalExpand addRowBot rowsToExpandVertically expandToBot caps
+      |> conditionalExpand addRowTop rowsToExpandVertically expandToTop caps
+
 
 --Probably no longer necessary
 coordList : Dimensions -> List (List (Int, Int))
