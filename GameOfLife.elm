@@ -10,7 +10,7 @@ type alias Dimensions = (Int, Int) -- (x,y)
 updateGrid : (Maybe Int, Maybe Int) -> List Int -> List Int -> Grid -> Grid
 updateGrid caps liveToDeath deadToLife g =
     let (xMax, yMax) = getDimensions g in
-    expandGrid caps (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g))
+    expandGrid caps (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) (Debug.log "liveToDeath" liveToDeath) (Debug.log "deadToLife" deadToLife))) g))
 
 fromListList : List (List Bool) -> Grid
 fromListList xs = Array.fromList (List.map (Array.fromList) xs)

@@ -60,7 +60,7 @@ clickUpdate (coorx,coory) state =
 
 liveToDeathUpdate : Int -> Bool -> State -> State
 liveToDeathUpdate val bool state =
-  if Debug.log (toString (val, bool)) bool then
+  if Debug.log (toString state.liveToDeath) bool then
     if List.member val state.liveToDeath
     then
       state
@@ -75,14 +75,14 @@ liveToDeathUpdate val bool state =
 
 deadToLifeUpdate : Int -> Bool -> State -> State
 deadToLifeUpdate val bool state =
-  if Debug.log (toString (val, bool)) bool then
+  if Debug.log (toString state.deadToLife) bool then
     if List.member val state.deadToLife
     then
       state
     else
       {state | deadToLife = val::state.deadToLife}
   else
-    if List.member val state.liveToDeath
+    if List.member val state.deadToLife
     then
       {state | deadToLife = List.filterMap (\x-> if x==val then Nothing else Just x) state.deadToLife}
     else
