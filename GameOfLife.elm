@@ -1,4 +1,4 @@
-module GameOfLife (Grid, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList, getDimensions, toggleCoord) where
+module GameOfLife (Grid, Toroidal, updateGrid, gridMap, gridMapExtra, emptyGrid, getElement, fromListList, getDimensions, toggleCoord) where
 
 import Array
 import List
@@ -6,11 +6,12 @@ import Debug
 
 type alias Grid = Array.Array (Array.Array Bool)
 type alias Dimensions = (Int, Int) -- (x,y)
+type alias Toroidal = Bool
 
-updateGrid : (Maybe Int, Maybe Int) -> List Int -> List Int -> Grid -> Grid
-updateGrid caps liveToDeath deadToLife g =
+updateGrid : Toroidal -> (Maybe Int, Maybe Int) -> List Int -> List Int -> Grid -> Grid
+updateGrid toroidal caps liveToDeath deadToLife g =
     let (xMax, yMax) = getDimensions g in
-    expandGrid caps (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount g x y) liveToDeath deadToLife)) g))
+    expandGrid toroidal caps (fromListList (gridMap (\((x,y),bool)-> (chooseNextState (bool, getNeighborCount toroidal g x y) liveToDeath deadToLife)) g))
 
 fromListList : List (List Bool) -> Grid
 fromListList xs = Array.fromList (List.map (Array.fromList) xs)
@@ -18,9 +19,9 @@ fromListList xs = Array.fromList (List.map (Array.fromList) xs)
 emptyGrid : Dimensions -> Grid
 emptyGrid (x,y) = fromListList (List.repeat x (List.repeat y False))
 
-getNeighborCount : Grid -> Int -> Int -> Int
-getNeighborCount g x y = 
-    List.sum (List.map (\val -> gridIntMap (getElement g val)) 
+getNeighborCount : Toroidal -> Grid -> Int -> Int -> Int
+getNeighborCount toroidal g x y = 
+    List.sum (List.map (\val -> gridIntMap (getElement toroidal g val)) 
         [(x-1, y-1), (x-1, y), (x-1,y+1), (x+1, y-1), (x+1, y), (x+1,y+1), (x, y-1), (x,y+1)])
 
 gridIntMap : Maybe Bool -> Int
@@ -29,11 +30,14 @@ gridIntMap x = case x of
     Just True -> 1
     Just False -> 0
 
-getElement : Grid -> (Int, Int) -> Maybe Bool
-getElement g (x,y) = 
-    case (Array.get x g) of
+getElement : Toroidal -> Grid -> (Int, Int) -> Maybe Bool
+getElement toroidal g (x,y) =
+  let (maxX, maxY) = getDimensions g in 
+  let xcoor = if toroidal then x%maxX else x
+      ycoor = if toroidal then y%maxY else y in
+    case (Array.get xcoor g) of
         Nothing -> Nothing
-        Just arr -> (Array.get y arr)
+        Just arr -> (Array.get ycoor arr)
 
 chooseNextState : (Bool, Int) -> List Int -> List Int -> Bool
 chooseNextState (prevState, neighbors) liveToDeath deadToLife = 
@@ -147,8 +151,8 @@ expandToTop : Grid -> Bool
 expandToTop g = let (xMax, yMax) = getDimensions g in
   List.member True (Array.toList (Array.map (\arr -> (fromJust (Array.get (yMax-1) arr))) g))
 
-expandGrid : (Maybe Int, Maybe Int) -> Grid -> Grid
-expandGrid caps g = 
+expandGrid : Toroidal -> (Maybe Int, Maybe Int) -> Grid -> Grid
+expandGrid toroidal caps g = if toroidal then g else 
     g |> conditionalExpand addColumnLeft rowsToExpandHorizontally expandToLeft caps
       |> conditionalExpand addColumnRight rowsToExpandHorizontally expandToRight caps
       |> conditionalExpand addRowBot rowsToExpandVertically expandToBot caps

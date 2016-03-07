@@ -71,9 +71,6 @@ makeFieldSignal func mailbox = Signal.map (\content -> func content.string) mail
 timeSignal : Signal Float
 timeSignal = Signal.map (Time.inMilliseconds) (Time.every (Time.millisecond * 50))
 
---rawTickSignal : Signal ()
---rawTickSignal = Signal.map (\_ -> ()) (Time.every (Time.millisecond*50))
-
 tickSignal : Signal Event
 tickSignal = Signal.map maybeTickUpdate timeSignal
 

@@ -34,6 +34,7 @@ type alias State = {  g : Grid
                     , saveNameString : String
                     , lastUpdate : Float
                     , updatePeriod : Float
+                    , toroidalGrid : Bool
                   }
 
 type alias ClickEvent = (Int, Int)
@@ -50,6 +51,7 @@ startState = { g = gliderGun
               , saveNameString = ""
               , lastUpdate = 0.0
               , updatePeriod = 100.0
+              , toroidalGrid = True
             }
 
 changeMode : State -> State
@@ -94,7 +96,7 @@ maybeTickUpdate x state = if x > state.updatePeriod + state.lastUpdate then
 tickUpdate : State -> State
 tickUpdate state = 
   if state.running then 
-    {state | g = updateGrid state.maxSize state.liveToDeath state.deadToLife state.g}
+    {state | g = updateGrid state.toroidalGrid state.maxSize state.liveToDeath state.deadToLife state.g}
   else
     state
 
