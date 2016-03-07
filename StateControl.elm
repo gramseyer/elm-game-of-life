@@ -52,7 +52,7 @@ startState = { g = gliderGun
               , saveNameString = ""
               , lastUpdate = 0.0
               , updatePeriod = 100.0
-              , toroidalGrid = True
+              , toroidalGrid = False
             }
 
 changeMode : State -> State
