@@ -14,12 +14,23 @@ import String
 import Text
 import Window
 
--- view will generate a grid of squares black -> false, white -> true
-view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element -> E.Element
+view : Signal.Mailbox Event 
+    -> Signal.Mailbox ClickEvent 
+    -> (Int, Int)
+    -> State
+    -> E.Element --newGridFields
+    -> E.Element --liveToDeathChecks
+    -> E.Element --deadToLifeChecks
+    -> E.Element --maxGridFields
+    -> E.Element --saveGridNameField
+    -> E.Element
 view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields saveGridNameField = 
   let renderedUIElements = E.flow E.down (renderButtons statechange (w,h) state) in
-  let gridsizes = E.flow E.down ([newGridFields, maxGridFields]) in 
-  let saving = E.flow E.down ([saveGridNameField, (I.button (Signal.message statechange.address saveGrid) "Save Grid"), (renderDropdown statechange state)]) in
+  let gridsizes = E.flow E.down [newGridFields, maxGridFields] in 
+  let saving = E.flow E.down [  saveGridNameField
+                              , (I.button (Signal.message statechange.address saveGrid) "Save Grid")
+                              , (renderDropdown statechange state)
+                              ] in
   let uiElements = E.flow E.right 
                   (renderedUIElements :: 
                   (List.append 
@@ -50,24 +61,30 @@ findsqsizewh (w,h) g =
     (sqsize, width, height)
 
 makeSquareForm : Color.Color -> Float -> C.Form
-makeSquareForm color size = (C.group [(C.filled color (C.square size)), (C.outlined {defaultLine | color = Color.blue} (C.square size)) ]) 
+makeSquareForm color size = C.group [  (C.filled color (C.square size))
+                                    ,  (C.outlined {defaultLine | color = Color.blue} (C.square size))
+                                    ] 
 
 makeFormIntoClickable : Signal.Mailbox ClickEvent -> Int -> Int -> Int ->C.Form -> C.Form
-makeFormIntoClickable lastClicked x y size form=
+makeFormIntoClickable lastClicked x y size form =
   C.toForm (I.clickable (Signal.message lastClicked.address (x,y)) (C.collage size size [form]))
 
 makeSquare : Signal.Mailbox ClickEvent -> ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
 makeSquare lastClicked ((x,y), v, (size, maxx, maxy)) = 
-  let coords = ((0.5+(toFloat x)) *size - ((toFloat maxx)/2) , (0.5+ (toFloat y)) *size - ((toFloat maxy)/2)) in
-  if v then
-    C.move coords (makeFormIntoClickable lastClicked x y (round size) (makeSquareForm Color.white size))
-  else 
-    C.move coords (makeFormIntoClickable lastClicked x y (round size) (makeSquareForm Color.black size))
+  let 
+    coords = ((0.5+(toFloat x)) * size - ((toFloat maxx)/2) , (0.5+ (toFloat y)) * size - ((toFloat maxy)/2)) 
+    squareColor = if v then Color.white else Color.black
+  in
+    C.move coords (makeFormIntoClickable lastClicked x y (round size) (makeSquareForm squareColor size))
+
 
 renderGameControlPanel : E.Element -> E.Element -> E.Element
 renderGameControlPanel deadToLife liveToDeath =
   let labels = E.flow E.right (List.map (\x-> E.container 40 40 E.middle (E.show x)) [0..8])
-      names = E.flow E.down [renderText "Neighbors", renderText "liveToDeath", renderText "deadToLife"]
+      names = E.flow E.down [ renderText "Neighbors"
+                            , renderText "liveToDeath"
+                            , renderText "deadToLife"
+                            ]
   in 
   E.flow E.right [  names
                   , E.flow E.down [ labels

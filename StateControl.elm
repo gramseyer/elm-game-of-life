@@ -48,7 +48,11 @@ startState = { g = gliderGun
               , newCoords = (Nothing, Nothing)
               , liveToDeath = [0,1,4,5,6,7,8]
               , deadToLife = [3]
-              , savedGrids = [("Glider Gun", gliderGun), ("Pulsar ", pulsar), ("Big Pulsar", bigPulsar), ("Toroidal Gliders", toroidalGliders)]
+              , savedGrids = [  ("Glider Gun", gliderGun)
+                              , ("Pulsar ", pulsar)
+                              , ("Big Pulsar", bigPulsar)
+                              , ("Toroidal Gliders", toroidalGliders)
+                             ]
               , saveNameString = ""
               , lastUpdate = 0.0
               , updatePeriod = 100.0
@@ -59,10 +63,10 @@ changeMode : State -> State
 changeMode state = { state |  running = not (state.running) } 
 
 clearGrid : State -> State
-clearGrid state =  {state | g = emptyGrid (getDimensions state.g) , running = False} 
+clearGrid state =  { state | g = emptyGrid (getDimensions state.g) , running = False} 
 
 newGrid : State -> State
-newGrid state=  {state | g = emptyGrid (newDimensions state), running = False}
+newGrid state=  { state | g = emptyGrid (newDimensions state), running = False}
 
 newDimensions : State -> (Int, Int)
 newDimensions state = case state.newCoords of
@@ -90,7 +94,7 @@ parse x = Debug.log x (Result.toMaybe (String.toInt x))
 
 maybeTickUpdate : Float -> State -> State
 maybeTickUpdate x state = if x > state.updatePeriod + state.lastUpdate then 
-                            tickUpdate {state | lastUpdate = x}
+                            tickUpdate { state | lastUpdate = x}
                           else 
                             state
 
