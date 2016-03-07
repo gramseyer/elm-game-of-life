@@ -17,15 +17,16 @@ import Window
 -- view will generate a grid of squares black -> false, white -> true
 view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element -> E.Element
 view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields saveGridNameField = 
-  let renderedUIElements = renderButtons statechange (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields
-                                                                  , (renderGameControlPanel deadToLifeChecks liveToDeathChecks)
-                                                                  , maxGridFields
-                                                                  , (renderDropdown statechange state)
-                                                                  , saveGridNameField
-                                                                  , (I.button (Signal.message statechange.address saveGrid) "Save Grid")
-                                                                  , (renderSpeedButtons statechange state)
-                                                                  ]) in
+  let renderedUIElements = E.flow E.down (renderButtons statechange (w,h) state) in
+  let gridsizes = E.flow E.down ([newGridFields, maxGridFields]) in 
+  let saving = E.flow E.down ([saveGridNameField, (I.button (Signal.message statechange.address saveGrid) "Save Grid"), (renderDropdown statechange state)]) in
+  let uiElements = E.flow E.right 
+                  (renderedUIElements :: 
+                  (List.append 
+                              (gridsizes :: [saving] )
+                              [(renderGameControlPanel deadToLifeChecks liveToDeathChecks), 
+                              (renderSpeedButtons statechange state)
+                              ])) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
