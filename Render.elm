@@ -105,11 +105,14 @@ renderButtons statechange (w,h) state =
 getToggleButtonText : State -> String
 getToggleButtonText state = if state.running then "Stop Simulation" else "Start Simulation"
 
+getTorodialToggleButtonText : State -> String
+getTorodialToggleButtonText state = if state.toroidalGrid then "Stop Torodial" else "Start Torodial"
+
 renderSpeedandtoroidalButtons : Signal.Mailbox Event -> State -> E.Element
 renderSpeedandtoroidalButtons statechange state = E.flow E.right [(E.flow E.down 
   [ (I.button (Signal.message statechange.address speedIncreaseUpdate) "Increase Speed")
   , (I.button (Signal.message statechange.address speedDecreaseUpdate) "Decrease Speed")
-  , (I.button (Signal.message statechange.address toggleToroidalGridUpdate) "toggle grid toroidalness")
+  , (I.button (Signal.message statechange.address toggleToroidalGridUpdate) (getTorodialToggleButtonText state))
   ]), renderText ((toString state.updatePeriod) ++ " ms")]
 
 renderNewGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
