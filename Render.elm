@@ -135,15 +135,19 @@ renderSpeedandToroidalButtons statechange state = E.flow E.right [(E.flow E.down
 
 renderNewGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
 renderNewGridInputFields fieldX fieldY contentx contenty = 
-  let renderedXField = renderField fieldX "New X-Dimension" contentx in
-  let renderedYField = renderField fieldY "New Y-Dimension" contenty in
-  E.flow E.down [renderedXField, renderedYField]
+  let
+    renderedXField = renderField fieldX "New X-Dimension" contentx
+    renderedYField = renderField fieldY "New Y-Dimension" contenty
+  in
+    E.flow E.down [renderedXField, renderedYField]
 
 renderMaxGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
 renderMaxGridInputFields fieldX fieldY contentX contentY = 
-  let renderedXField = renderField fieldX "Max X-Dimension" contentX in
-  let renderedYField = renderField fieldY "Max Y-Dimension" contentY in
-  E.flow E.down [renderedXField, renderedYField]
+  let
+    renderedXField = renderField fieldX "Max X-Dimension" contentX
+    renderedYField = renderField fieldY "Max Y-Dimension" contentY
+  in
+    E.flow E.down [renderedXField, renderedYField]
 
 renderField : Signal.Mailbox F.Content -> String -> F.Content -> E.Element
 renderField field defaultString = F.field F.defaultStyle (Signal.message field.address) defaultString
