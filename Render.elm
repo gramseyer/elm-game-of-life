@@ -18,7 +18,14 @@ import Window
 view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element -> E.Element
 view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields saveGridNameField = 
   let renderedUIElements = renderButtons statechange (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields, (renderDropdown statechange state), saveGridNameField, (I.button (Signal.message statechange.address saveGrid) "Save Grid"), (renderSpeedButtons statechange state)]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields
+                                                                  , (renderGameControlPanel deadToLifeChecks liveToDeathChecks)
+                                                                  , maxGridFields
+                                                                  , (renderDropdown statechange state)
+                                                                  , saveGridNameField
+                                                                  , (I.button (Signal.message statechange.address saveGrid) "Save Grid")
+                                                                  , (renderSpeedButtons statechange state)
+                                                                  ]) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
@@ -28,7 +35,8 @@ renderGrid lastClicked (w,h) state =
   --create collage of appropriate size, not doing anything intelligent here yet and fill it with squares
   C.collage 
     width height
-    ((C.filled Color.blue (C.rect (toFloat(width)) (toFloat(height)))) :: (List.concat (gridMapExtra (makesquare lastClicked) (sqsize, width, height) state.g)))
+    ((C.filled Color.blue (C.rect (toFloat(width)) (toFloat(height)))) :: 
+      (List.concat (gridMapExtra (makeSquare lastClicked) (sqsize, width, height) state.g)))
 
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
 findsqsizewh (w,h) g = 
@@ -47,8 +55,8 @@ makeFormIntoClickable : Signal.Mailbox ClickEvent -> Int -> Int -> Int ->C.Form 
 makeFormIntoClickable lastClicked x y size form=
   C.toForm (I.clickable (Signal.message lastClicked.address (x,y)) (C.collage size size [form]))
 
-makesquare : Signal.Mailbox ClickEvent -> ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
-makesquare lastClicked ((x,y), v, (size, maxx, maxy)) = 
+makeSquare : Signal.Mailbox ClickEvent -> ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
+makeSquare lastClicked ((x,y), v, (size, maxx, maxy)) = 
   let coords = ((0.5+(toFloat x)) *size - ((toFloat maxx)/2) , (0.5+ (toFloat y)) *size - ((toFloat maxy)/2)) in
   if v then
     C.move coords (makeFormIntoClickable lastClicked x y (round size) (makeSquareForm Color.white size))
