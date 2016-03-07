@@ -26,8 +26,8 @@ view : Signal.Mailbox Event
     -> E.Element
 view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields saveGridNameField = 
   let renderedUIElements = E.flow E.down (renderButtons statechange (w,h) state) in
-  let gridsizes = E.flow E.down [newGridFields, maxGridFields] in 
-  let saving = E.flow E.down [  saveGridNameField
+  let gridsizes = E.flow E.down [newGridFields, maxGridFields]
+      saving = E.flow E.down [  saveGridNameField
                               , (I.button (Signal.message statechange.address saveGrid) "Save Grid")
                               , (renderDropdown statechange state)
                               ] in
@@ -36,7 +36,7 @@ view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToL
                   , gridsizes
                   , saving
                   , (renderGameControlPanel deadToLifeChecks liveToDeathChecks)
-                  , (renderSpeedandtoroidalButtons statechange state)
+                  , (renderSpeedandToroidalButtons statechange state)
                   ]
   in
     E.flow E.down [(renderGrid lastClicked (w,h) state), uiElements]
@@ -62,8 +62,8 @@ findsqsizewh (w,h) g =
     (sqsize, width, height)
 
 makeSquareForm : Color.Color -> Float -> C.Form
-makeSquareForm color size = C.group [  (C.filled color (C.square size))
-                                    ,  (C.outlined {defaultLine | color = Color.blue} (C.square size))
+makeSquareForm color size = C.group [ (C.filled color (C.square size))
+                                    , (C.outlined {defaultLine | color = Color.blue} (C.square size))
                                     ] 
 
 makeFormIntoClickable : Signal.Mailbox ClickEvent -> Int -> Int -> Int ->C.Form -> C.Form
@@ -87,12 +87,12 @@ renderGameControlPanel deadToLife liveToDeath =
                             , renderText "deadToLife"
                             ]
   in 
-  E.flow E.right [  names
+  E.flow E.right [ names
                   , E.flow E.down [ labels
                                   , liveToDeath
                                   , deadToLife
                                   ]
-                ]
+                 ]
 
 renderBoxList : List (Signal.Mailbox Bool) -> Signal E.Element
 renderBoxList checkBoxes = let listOfSignals = (List.map ((\x -> Signal.map (renderBox x) x.signal)) checkBoxes) in
@@ -126,8 +126,8 @@ getToggleButtonText state = if state.running then "Stop Simulation" else "Start 
 getTorodialToggleButtonText : State -> String
 getTorodialToggleButtonText state = if state.toroidalGrid then "Stop Torodial" else "Start Torodial"
 
-renderSpeedandtoroidalButtons : Signal.Mailbox Event -> State -> E.Element
-renderSpeedandtoroidalButtons statechange state = E.flow E.right [(E.flow E.down 
+renderSpeedandToroidalButtons : Signal.Mailbox Event -> State -> E.Element
+renderSpeedandToroidalButtons statechange state = E.flow E.right [(E.flow E.down 
   [ (I.button (Signal.message statechange.address speedIncreaseUpdate) "Increase Speed")
   , (I.button (Signal.message statechange.address speedDecreaseUpdate) "Decrease Speed")
   , (I.button (Signal.message statechange.address toggleToroidalGridUpdate) (getTorodialToggleButtonText state))
