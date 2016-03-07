@@ -68,8 +68,14 @@ saveGridNameEventSignal = makeFieldSignal storeSaveStringUpdate saveGridNameFiel
 makeFieldSignal : (String -> Event) -> Signal.Mailbox F.Content -> Signal Event
 makeFieldSignal func mailbox = Signal.map (\content -> func content.string) mailbox.signal
 
+timeSignal : Signal Float
+timeSignal = Signal.map (Time.inMilliseconds) (Time.every (Time.millisecond * 50))
+
+--rawTickSignal : Signal ()
+--rawTickSignal = Signal.map (\_ -> ()) (Time.every (Time.millisecond*50))
+
 tickSignal : Signal Event
-tickSignal = Signal.map (\x-> tickUpdate) (Time.every (Time.millisecond*500))
+tickSignal = Signal.map maybeTickUpdate timeSignal
 
 clickSignal : Signal Event
 clickSignal = Signal.map (\(x,y)-> (clickUpdate (x,y)) ) lastClicked.signal
