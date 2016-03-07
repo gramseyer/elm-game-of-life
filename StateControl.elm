@@ -90,7 +90,7 @@ processMaxYChange str state = {state | maxSize = (fst (state.maxSize), parse str
 
 
 parse : String -> Maybe Int
-parse x = Debug.log x (Result.toMaybe (String.toInt x))
+parse x = Result.toMaybe (String.toInt x)
 
 maybeTickUpdate : Float -> State -> State
 maybeTickUpdate x state = if x > state.updatePeriod + state.lastUpdate then 
