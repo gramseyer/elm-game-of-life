@@ -25,7 +25,8 @@ view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToL
                   (List.append 
                               (gridsizes :: [saving] )
                               [(renderGameControlPanel deadToLifeChecks liveToDeathChecks), 
-                              (renderSpeedButtons statechange state)
+                              (renderSpeedButtons statechange state),
+                              (I.button (Signal.message statechange.address toggleToroidalGridUpdate) "toggle grid toroidalness")
                               ])) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 

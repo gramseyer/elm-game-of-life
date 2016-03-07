@@ -18,6 +18,7 @@ module StateControl (State
                     , saveGrid
                     , speedIncreaseUpdate
                     , speedDecreaseUpdate
+                    , toggleToroidalGridUpdate
                     ) where
 
 import GameOfLife exposing (..)
@@ -169,3 +170,6 @@ speedIncreaseUpdate state = if state.updatePeriod > speedUpdateIncrement then
 
 speedDecreaseUpdate : State -> State
 speedDecreaseUpdate state = {state | updatePeriod = state.updatePeriod + speedUpdateIncrement}
+
+toggleToroidalGridUpdate : State -> State
+toggleToroidalGridUpdate state = {state | toroidalGrid = not state.toroidalGrid}
