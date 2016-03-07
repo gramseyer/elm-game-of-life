@@ -146,5 +146,5 @@ toroidalGliders = fromListList [
         [False, False, True, False, False, False, False, True, False, False],
         [False, False, False, True, False, False, False, False, True, False],
         [False, True, True, True, False, False, True, True, True, False],
-        [False, False, False, False, False, False, False, False, False, False],
+        [False, False, False, False, False, False, False, False, False, False]
     ]
