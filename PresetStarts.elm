@@ -1,4 +1,4 @@
-module PresetStarts (blinker, gliderGun, pulsar, bigPulsar) where
+module PresetStarts (blinker, gliderGun, pulsar, bigPulsar, toroidalGliders) where
 
 import GameOfLife exposing (..)
 
