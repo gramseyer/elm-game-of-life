@@ -32,13 +32,14 @@ view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToL
                               , (renderDropdown statechange state)
                               ] in
   let uiElements = E.flow E.right 
-                  (renderedUIElements :: 
-                  (List.append 
-                              (gridsizes :: [saving] )
-                              [(renderGameControlPanel deadToLifeChecks liveToDeathChecks), 
-                              (renderSpeedandtoroidalButtons statechange state)
-                              ])) in
-    E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
+                  [ renderedUIElements
+                  , gridsizes
+                  , saving
+                  , (renderGameControlPanel deadToLifeChecks liveToDeathChecks)
+                  , (renderSpeedandtoroidalButtons statechange state)
+                  ]
+  in
+    E.flow E.down [(renderGrid lastClicked (w,h) state), uiElements]
 
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
 renderGrid lastClicked (w,h) state = 
