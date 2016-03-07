@@ -18,7 +18,7 @@ import Window
 view : Signal.Mailbox Event -> Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element -> E.Element ->E.Element -> E.Element -> E.Element -> E.Element
 view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToLifeChecks maxGridFields saveGridNameField = 
   let renderedUIElements = renderButtons statechange (w,h) state in
-  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields, (renderDropdown statechange state), saveGridNameField, (I.button (Signal.message statechange.address saveGrid) "Save Grid"), (renderSpeedButtons statechange)]) in
+  let uiElements = E.flow E.right (List.append renderedUIElements [newGridFields, (renderGameControlPanel deadToLifeChecks liveToDeathChecks), maxGridFields, (renderDropdown statechange state), saveGridNameField, (I.button (Signal.message statechange.address saveGrid) "Save Grid"), (renderSpeedButtons statechange state)]) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
@@ -96,11 +96,11 @@ renderButtons statechange (w,h) state =
 getToggleButtonText : State -> String
 getToggleButtonText state = if state.running then "Stop Simulation" else "Start Simulation"
 
-renderSpeedButtons : Signal.Mailbox Event -> E.Element
-renderSpeedButtons statechange = E.flow E.down 
+renderSpeedButtons : Signal.Mailbox Event -> State -> E.Element
+renderSpeedButtons statechange state = E.flow E.right [(E.flow E.down 
   [ (I.button (Signal.message statechange.address speedIncreaseUpdate) "Increase Speed")
   , (I.button (Signal.message statechange.address speedDecreaseUpdate) "Decrease Speed")
-  ]
+  ]), renderText ((toString state.updatePeriod) ++ " ms")]
 
 renderNewGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
 renderNewGridInputFields fieldX fieldY contentx contenty = 
