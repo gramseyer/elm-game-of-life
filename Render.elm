@@ -128,5 +128,5 @@ renderField field defaultString = F.field F.defaultStyle (Signal.message field.a
 renderDropdown : Signal.Mailbox Event -> State -> E.Element
 renderDropdown statechange state = 
   I.dropDown (Signal.message statechange.address) 
-    (("Load Grid",        identity) ::
+    (("Load Grid", identity) ::
       (List.map (\(str, grid) -> (str, (loadGridUpdate str))) state.savedGrids))

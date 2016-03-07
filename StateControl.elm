@@ -1,4 +1,24 @@
-module StateControl (State, Event, ClickEvent, startState, changeMode, clearGrid, newGrid, processNewXChange, processNewYChange, processMaxXChange, processMaxYChange, tickUpdate, maybeTickUpdate, clickUpdate, liveToDeathUpdate, deadToLifeUpdate, loadGridUpdate, storeSaveStringUpdate, saveGrid, speedIncreaseUpdate, speedDecreaseUpdate) where
+module StateControl (State
+                    , Event
+                    , ClickEvent
+                    , startState
+                    , changeMode
+                    , clearGrid
+                    , newGrid
+                    , processNewXChange
+                    , processNewYChange
+                    , processMaxXChange
+                    , processMaxYChange
+                    , maybeTickUpdate
+                    , clickUpdate
+                    , liveToDeathUpdate
+                    , deadToLifeUpdate
+                    , loadGridUpdate
+                    , storeSaveStringUpdate
+                    , saveGrid
+                    , speedIncreaseUpdate
+                    , speedDecreaseUpdate
+                    ) where
 
 import GameOfLife exposing (..)
 import PresetStarts exposing (..)
@@ -140,7 +160,10 @@ speedUpdateIncrement : Float
 speedUpdateIncrement = 50.0
 
 speedIncreaseUpdate : State -> State
-speedIncreaseUpdate state = if state.updatePeriod > speedUpdateIncrement then {state | updatePeriod = state.updatePeriod - speedUpdateIncrement} else state
+speedIncreaseUpdate state = if state.updatePeriod > speedUpdateIncrement then 
+                              {state | updatePeriod = state.updatePeriod - speedUpdateIncrement}
+                            else
+                              state
 
 speedDecreaseUpdate : State -> State
 speedDecreaseUpdate state = {state | updatePeriod = state.updatePeriod + speedUpdateIncrement}
