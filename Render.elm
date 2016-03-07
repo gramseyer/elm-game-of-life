@@ -43,7 +43,7 @@ findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
 findsqsizewh (w,h) g = 
   let (maxx, maxy) = getDimensions g in 
 --the size of the square should be the smallest of the window/sizeofarray
-  let sqsize = Basics.min ((toFloat w)/(toFloat maxx)) ((toFloat (h - 100))/(toFloat maxy)) in 
+  let sqsize = Basics.min ((toFloat w)/(toFloat maxx)) ((toFloat (h - 140))/(toFloat maxy)) in 
   let width = ceiling (sqsize * (toFloat maxx))
       height = ceiling (sqsize * (toFloat maxy))
   in
