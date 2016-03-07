@@ -146,7 +146,7 @@ getSavedStateFromList str list = case list of
   (str2, a)::list' -> if str == str2 then Just a else (getSavedStateFromList str list')
 
 loadGridUpdate : String -> State -> State
-loadGridUpdate str state = Debug.log "foobar" { state | g = getSavedState state str, running=False}
+loadGridUpdate str state = { state | g = getSavedState state str, running=False}
 
 storeSaveStringUpdate : String -> State -> State
 storeSaveStringUpdate str state = { state | saveNameString = str}
