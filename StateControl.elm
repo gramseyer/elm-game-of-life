@@ -48,7 +48,7 @@ startState = { g = gliderGun
               , newCoords = (Nothing, Nothing)
               , liveToDeath = [0,1,4,5,6,7,8]
               , deadToLife = [3]
-              , savedGrids = [("Glider Gun", gliderGun), ("Pulsar ", pulsar), ("Big Pulsar", bigPulsar)]
+              , savedGrids = [("Glider Gun", gliderGun), ("Pulsar ", pulsar), ("Big Pulsar", bigPulsar), ("Toroidal Gliders", toroidalGliders)]
               , saveNameString = ""
               , lastUpdate = 0.0
               , updatePeriod = 100.0

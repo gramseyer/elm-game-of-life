@@ -130,3 +130,21 @@ bigPulsar = fromListList [
         [False, False, False, False, False, True, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, True, False, False, False, False, False],
         [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
     ]
+
+toroidalGliders = fromListList [
+        [False, False, False, False, False, False, False, False, False, False],
+        [False, False, True, False, False, False, False, True, False, False],
+        [False, False, False, True, False, False, False, False, True, False],
+        [False, True, True, True, False, False, True, True, True, False],
+        [False, False, False, False, False, False, False, False, False, False],
+        [False, False, False, False, False, False, False, False, False, False],
+        [False, False, True, False, False, False, False, True, False, False],
+        [False, False, False, True, False, False, False, False, True, False],
+        [False, True, True, True, False, False, True, True, True, False],
+        [False, False, False, False, False, False, False, False, False, False],
+        [False, False, False, False, False, False, False, False, False, False],
+        [False, False, True, False, False, False, False, True, False, False],
+        [False, False, False, True, False, False, False, False, True, False],
+        [False, True, True, True, False, False, True, True, True, False],
+        [False, False, False, False, False, False, False, False, False, False],
+    ]
