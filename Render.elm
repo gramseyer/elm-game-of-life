@@ -25,8 +25,7 @@ view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToL
                   (List.append 
                               (gridsizes :: [saving] )
                               [(renderGameControlPanel deadToLifeChecks liveToDeathChecks), 
-                              (renderSpeedButtons statechange state),
-                              (I.button (Signal.message statechange.address toggleToroidalGridUpdate) "toggle grid toroidalness")
+                              (renderSpeedandtoroidalButtons statechange state)
                               ])) in
     E.flow E.down ((renderGrid lastClicked (w,h) state) :: [uiElements])
 
@@ -106,10 +105,11 @@ renderButtons statechange (w,h) state =
 getToggleButtonText : State -> String
 getToggleButtonText state = if state.running then "Stop Simulation" else "Start Simulation"
 
-renderSpeedButtons : Signal.Mailbox Event -> State -> E.Element
-renderSpeedButtons statechange state = E.flow E.right [(E.flow E.down 
+renderSpeedandtoroidalButtons : Signal.Mailbox Event -> State -> E.Element
+renderSpeedandtoroidalButtons statechange state = E.flow E.right [(E.flow E.down 
   [ (I.button (Signal.message statechange.address speedIncreaseUpdate) "Increase Speed")
   , (I.button (Signal.message statechange.address speedDecreaseUpdate) "Decrease Speed")
+  , (I.button (Signal.message statechange.address toggleToroidalGridUpdate) "toggle grid toroidalness")
   ]), renderText ((toString state.updatePeriod) ++ " ms")]
 
 renderNewGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
