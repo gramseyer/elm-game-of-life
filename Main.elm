@@ -51,19 +51,22 @@ makeBoxSignals : (Int -> Bool -> State -> State) -> List (Signal.Mailbox Bool) -
 makeBoxSignals func boxes = List.map2 (\int-> \box -> Signal.map (\bool -> func int bool) box.signal) [0..8] boxes
 
 newGridXDimensionSignal : Signal Event
-newGridXDimensionSignal = (Signal.map (\content ->  (processNewXChange content.string)) newGridFieldx.signal)
+newGridXDimensionSignal = makeFieldSignal processNewXChange newGridFieldx
 
 newGridYDimensionSignal : Signal Event
-newGridYDimensionSignal = (Signal.map (\content ->  (processNewYChange content.string)) newGridFieldy.signal)
+newGridYDimensionSignal = makeFieldSignal processNewYChange newGridFieldy
 
 maxGridXDimensionSignal : Signal Event
-maxGridXDimensionSignal = (Signal.map (\content ->  (processMaxXChange content.string)) maxGridFieldx.signal)
+maxGridXDimensionSignal = makeFieldSignal processMaxXChange maxGridFieldx
 
 maxGridYDimensionSignal : Signal Event
-maxGridYDimensionSignal = (Signal.map (\content ->  (processMaxYChange content.string)) maxGridFieldy.signal)
+maxGridYDimensionSignal = makeFieldSignal processMaxYChange maxGridFieldy
 
 saveGridNameEventSignal : Signal Event
-saveGridNameEventSignal = (Signal.map (\content -> (storeSaveStringUpdate content.string)) saveGridNameField.signal)
+saveGridNameEventSignal = makeFieldSignal storeSaveStringUpdate saveGridNameField
+
+makeFieldSignal : (String -> Event) -> Signal.Mailbox F.Content -> Signal Event
+makeFieldSignal func mailbox = Signal.map (\content -> func content.string) mailbox.signal
 
 tickSignal : Signal Event
 tickSignal = Signal.map (\x-> tickUpdate) (Time.every (Time.millisecond*500))
