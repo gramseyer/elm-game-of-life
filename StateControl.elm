@@ -40,7 +40,7 @@ type alias State = {  g : Grid
 
 type alias ClickEvent = (Int, Int)
 type alias Event = (State -> State)
---initial state
+-- The initial state
 startState : State
 startState = { g = gliderGun
               , running = False
@@ -58,6 +58,8 @@ startState = { g = gliderGun
               , updatePeriod = 100.0
               , toroidalGrid = False
             }
+
+--The following are functions to change the state based on user input and timer events.
 
 changeMode : State -> State
 changeMode state = { state |  running = not (state.running) } 
@@ -92,19 +94,22 @@ processMaxYChange str state = {state | maxSize = (fst (state.maxSize), parse str
 parse : String -> Maybe Int
 parse x = Result.toMaybe (String.toInt x)
 
+-- Log a tick update only after a period of time has passed
 maybeTickUpdate : Float -> State -> State
 maybeTickUpdate x state = if x > state.updatePeriod + state.lastUpdate then 
                             tickUpdate { state | lastUpdate = x}
                           else 
                             state
--- only note a tick update if we are running
+
+-- Only note a tick update if we are running
 tickUpdate : State -> State
 tickUpdate state = 
   if state.running then 
     {state | g = updateGrid state.toroidalGrid state.maxSize state.liveToDeath state.deadToLife state.g}
   else
     state
--- only note a click update if we are not running
+
+-- Only note a click update if we are not running
 clickUpdate : (Int, Int) -> State -> State
 clickUpdate (coorx,coory) state = 
   if not state.running then 
@@ -112,6 +117,7 @@ clickUpdate (coorx,coory) state =
   else
     state
 
+-- Log changes to the liveToDeath checkboxes.
 liveToDeathUpdate : Int -> Bool -> State -> State
 liveToDeathUpdate val bool state =
   if Debug.log (toString state.liveToDeath) bool then
@@ -127,6 +133,7 @@ liveToDeathUpdate val bool state =
     else
       state
 
+-- Log changes to the deadToLife checkboxes.
 deadToLifeUpdate : Int -> Bool -> State -> State
 deadToLifeUpdate val bool state =
   if Debug.log (toString state.deadToLife) bool then
@@ -142,6 +149,10 @@ deadToLifeUpdate val bool state =
     else
       state
 
+--Load a saved grid.
+loadGridUpdate : String -> State -> State
+loadGridUpdate str state = { state | g = getSavedState state str, running=False}
+
 getSavedState : State -> String -> Grid
 getSavedState state str = case getSavedStateFromList str state.savedGrids of
   Just a -> a
@@ -152,17 +163,16 @@ getSavedStateFromList str list = case list of
   [] -> Nothing
   (str2, a)::list' -> if str == str2 then Just a else (getSavedStateFromList str list')
 
-loadGridUpdate : String -> State -> State
-loadGridUpdate str state = { state | g = getSavedState state str, running=False}
-
 storeSaveStringUpdate : String -> State -> State
 storeSaveStringUpdate str state = { state | saveNameString = str}
 
+-- Save the current grid.
 saveGrid : State -> State
 saveGrid state = case getSavedStateFromList state.saveNameString state.savedGrids of
   Nothing -> { state | savedGrids = (state.saveNameString, state.g) :: state.savedGrids}
   Just a -> state
 
+-- Alter the speed of the simulation.
 speedUpdateIncrement : Float
 speedUpdateIncrement = 50.0
 
@@ -175,5 +185,6 @@ speedIncreaseUpdate state = if state.updatePeriod > speedUpdateIncrement then
 speedDecreaseUpdate : State -> State
 speedDecreaseUpdate state = {state | updatePeriod = state.updatePeriod + speedUpdateIncrement}
 
+-- Toggle grid between expanding and toroidal mode.
 toggleToroidalGridUpdate : State -> State
 toggleToroidalGridUpdate state = {state | toroidalGrid = not state.toroidalGrid}

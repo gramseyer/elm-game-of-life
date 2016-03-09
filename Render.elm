@@ -41,6 +41,7 @@ view statechange lastClicked (w,h) state newGridFields liveToDeathChecks deadToL
   in
     E.flow E.down [(renderGrid lastClicked (w,h) state), uiElements]
 
+-- Renders the primary simulation grid.
 renderGrid : Signal.Mailbox ClickEvent -> (Int, Int) -> State -> E.Element
 renderGrid lastClicked (w,h) state = 
   let (sqsize, width, height) = findsqsizewh (w,h) state.g
@@ -51,7 +52,7 @@ renderGrid lastClicked (w,h) state =
     ((C.filled Color.blue (C.rect (toFloat(width)) (toFloat(height)))) :: 
       (List.concat (gridMapExtra (makeSquare lastClicked) (sqsize, width, height) state.g)))
 
--- calculate square size based on window dimensions and grid size
+-- Calculate square size based on window dimensions and grid size
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
 findsqsizewh (w,h) g = 
   let (maxx, maxy) = getDimensions g in 
@@ -62,17 +63,17 @@ findsqsizewh (w,h) g =
   in
     (sqsize, width, height)
 
--- create the form for each square
+-- Create the form for each square
 makeSquareForm : Color.Color -> Float -> C.Form
 makeSquareForm color size = C.group [ (C.filled color (C.square size))
                                     , (C.outlined {defaultLine | color = Color.blue} (C.square size))
                                     ] 
--- make the grid clickable
+-- Make a single square clickable
 makeFormIntoClickable : Signal.Mailbox ClickEvent -> Int -> Int -> Int ->C.Form -> C.Form
 makeFormIntoClickable lastClicked x y size form =
   C.toForm (I.clickable (Signal.message lastClicked.address (x,y)) (C.collage size size [form]))
 
--- create the square based on click
+-- Create a square in the grid.  The square will be clickable.
 makeSquare : Signal.Mailbox ClickEvent -> ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
 makeSquare lastClicked ((x,y), v, (size, maxx, maxy)) = 
   let 
@@ -81,7 +82,7 @@ makeSquare lastClicked ((x,y), v, (size, maxx, maxy)) =
   in
     C.move coords (makeFormIntoClickable lastClicked x y (round size) (makeSquareForm squareColor size))
 
-
+-- Render the game control buttons.
 renderGameControlPanel : E.Element -> E.Element -> E.Element
 renderGameControlPanel deadToLife liveToDeath =
   let labels = E.flow E.right (List.map (\x-> E.container 40 40 E.middle (E.show x)) [0..8])
@@ -97,6 +98,7 @@ renderGameControlPanel deadToLife liveToDeath =
                                   ]
                  ]
 
+--Render a list of checkboxes.
 renderBoxList : List (Signal.Mailbox Bool) -> Signal E.Element
 renderBoxList checkBoxes = let listOfSignals = (List.map ((\x -> Signal.map (renderBox x) x.signal)) checkBoxes) in
   recursiveMerge listOfSignals
@@ -104,6 +106,7 @@ renderBoxList checkBoxes = let listOfSignals = (List.map ((\x -> Signal.map (ren
 renderBox : Signal.Mailbox Bool -> Bool -> E.Element
 renderBox check bool = E.container 40 40 E.middle (I.checkbox (Signal.message check.address) bool)
 
+-- Merge a list of signals into a single signal.
 recursiveMerge : List (Signal E.Element) -> Signal E.Element
 recursiveMerge signals = case signals of 
   x::[] -> x
@@ -136,6 +139,7 @@ renderSpeedandToroidalButtons statechange state = E.flow E.right [(E.flow E.down
   , (I.button (Signal.message statechange.address toggleToroidalGridUpdate) (getTorodialToggleButtonText state))
   ]), renderText ((toString state.updatePeriod) ++ " ms")]
 
+--Render text input fields.
 renderNewGridInputFields : Signal.Mailbox F.Content -> Signal.Mailbox F.Content -> F.Content -> F.Content -> E.Element
 renderNewGridInputFields fieldX fieldY contentx contenty = 
   let
@@ -155,6 +159,7 @@ renderMaxGridInputFields fieldX fieldY contentX contentY =
 renderField : Signal.Mailbox F.Content -> String -> F.Content -> E.Element
 renderField field defaultString = F.field F.defaultStyle (Signal.message field.address) defaultString
 
+-- Render the save/load grid dropdown menu
 renderDropdown : Signal.Mailbox Event -> State -> E.Element
 renderDropdown statechange state = 
   I.dropDown (Signal.message statechange.address) 
