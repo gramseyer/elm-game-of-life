@@ -1,5 +1,6 @@
-Hannah Brodheim
-Geoffrey Ramseyer
+Hannah Brodheim (brodheim)
+
+Geoffrey Ramseyer (ramseyer)
 
 # Elm Game of Life
 
@@ -22,6 +23,8 @@ Note: We have found that our simulation performs far better in Chrome than in Fi
 
 * The default setting is for the grid to grow without bound whenever active cells approach the edge of the grid.  The user can set maximum grid bounds in the "Max X-Dimension" and "Max Y-Dimension" fields.  If these are set to bounds smaller than the current grid bounds,  the grid will simply not expand.  Empty fields result in the grid growing without bound.  Grid cells outside the rendered space are treated as dead cells for the purpose of calculating the number of living neighbors of a cell.
 
+* The user can also adjust the rules that determine which cells live and which cells die in the next timestep.  A living cell with n living neighbors will die in the next timestep if and only if the checkbox in row "liveToDeath" of column n is checked.  Similarly, a dead cell with n living neighbors will live in the next timestep if and only if the checkbox in row "deadToLife" of column n is checked. These rules can be changed while the simulation is running.
+
 * The user can also make the grid toroidal, in which case the top edge is treated as though it connected to the bottom edge, and the left edge is treated as though it connected to the right edge.There is also an option to make the grid torodial.  
 
 * The user can also adjust the speed of the simulation.  The update period is bounded below by 50ms, and can be adjusted in 50ms increments by the "Increase Speed" and "Decrease Speed" buttons.  In essence, the simulation ignores clock tick events until the specified amount has passed since the last grid update. 
@@ -40,4 +43,10 @@ There are currently four preset demonstration grids.  They are as follows (Most 
 
 * Torodidal Gliders - The Toroidal Gliders consists of several of the glider figures mentioned above.  With the default settings, they simply travel indefinitely in one direction.  This simulation, however, should use the Toroidal grid setting.  With this active, the gliders travel in loops to demonstrate the properties of a toroidal grid.
 
+* While not a preset configuration, using some arbitrary pattern, like the Glider Gun, and setting the game update rules to "All living cells die, and dead cells with 2 or 3 neighbors come to life" can produce interesting visualizations.  It certainly behaves very differently from the standard rules.  We recommend using either a toroidal grid or a bounded grid when altering the cell update rules, as many rule configurations result in rapid growth of the pattern of active cells.
+
+## Implementation Notes:
+
 The grid automatically adjusts square size to be the maximum available based upon window size and the restraint of leaving room vertically for the UI.  The UI is defaulted based on button size to save sufficient space.  The grid will always generate square buttons. 
+
+The grid is currently implemented as an Array of Array of Booleans.  Most of the time, however, most cells of the grid are dead.  An Array of Arrays gives us fast access to each element, which is useful when computing the number of neighbors of a cell.  However, it requires us to store more data than we need to and requires us to recreate the entire array at every timestep. 
