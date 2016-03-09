@@ -1,29 +1,30 @@
 Hannah Brodheim
 Geoffrey Ramseyer
 
-Elm Game of Life
+# Elm Game of Life
 
-We created a Conways Game of Life in Elm. 
-The game contains a user interface to modify the functionality of the game or adjust the true and false placement upon the grid. 
 
-The User Interface is designed to take up the bottom portion of the screen.  It contains the following options to adjust the games rules.
+We created a Conways Game of Life Simulator in Elm. 
+The core simulation consists of the simulation grid and a user interface below to modify the functionality of the simulation.  When the simulation is not running, the user can click on the tiles of the grid to toggle whether a tile is alive or dead.  The simulation grid will always be resized so that the user interface is visible beneath the simulation grid.
 
-The default of the game contains the basic rules, that a square with 3 neighbors becomes alive, and a square with anything other than 2 or 3 neighbors dies.  These options can be changed from a grid and immediately applied to the game while it is running.
+The settings loaded initially are configured to use the standard rules of Conway's Game of Life That is, that a dead square with 3 living neighbors becomes alive in the next timestep, and a living square becomes dead in the next timestep unless it has 2 or 3 living neighbors. 
 
-There is also an option to make the grid torodial.  By default the game is not torodial, by toggling the button the grid can be made to "wrap around" and allow the user to create different images.  
+## The User Interface allows the following modifications of the games rules:
 
-There is also an option to increase and decrease the speed.  This works by ignoring ticks if the speed is decreased, the tick rate is the same, an increasing number of the ticks are ignored.  The maximum speed is bounded by the tick rate initially set (50 milliseconds).   The minimum speed is bounded at zero. 
+* The user can toggle whether or not the simulation is running.
 
-The grid automatically adjusts to its contents, that is a moving shape will expand the grid as it increases the edge.  This is automatically disengaged in the torodial form since in this state it never reaches the edge.  There are 2 fields, "Max X-Dimension" and "Max Y-Dimension" which allow the user to limit the expansion of the grid.  In the case that the grid is already beyond the size specified it will simply cease to expand.  The grid does not contract or fail given a maximum size already smaller than the grid.
+* When the simulation is not running, the user can click on the grid to toggle whether or not a particular square is active.
 
-The user can also interact more directly with the contents of the grid.  The left most button is (depending on the state) "Start Simulation" or "Stop Simulation".  In the stopped state the user can directly click on squares of the grid to toggle their state between alive or dead, represented as true and false. 
+* The user can clear the grid.  This leaves the grid at the same size and sets all cells to dead.
 
-Clicking Clear Grid sets all squares to false.
+* The user can type in new grid coordinates in the "New X-Dimension" and "New Y-Dimension" fields.  Pressing "New Grid" sets the grid to a grid of the specified size with no living cells.
 
-Clicking New Grid initializes a new grid with all squares set to false.  If the fields "New X-Dimension" or "New Y-Dimension" are not both set, the grid will be the current size, otherwise the grid will take on the dimensions specified.
+* The default setting is for the grid to grow without bound whenever active cells approach the edge of the grid.  The user can set maximum grid bounds in the "Max X-Dimension" and "Max Y-Dimension" fields.  If these are set to bounds smaller than the current grid bounds,  the grid will simply not expand.  Empty fields result in the grid growing without bound.  Grid cells outside the rendered space are treated as dead cells for the purpose of calculating the number of living neighbors of a cell.
 
-There are a number of preset grid configurations that the user can chose from a drop down menu.  They also have the option to save a configuration that they create using the "Save Grid As" field paired with the "Save Grid" button. 
+* The user can also make the grid toroidal, in which case the top edge is treated as though it connected to the bottom edge, and the left edge is treated as though it connected to the right edge.There is also an option to make the grid torodial.  
 
-These saved configurations are only available for that session and are not written to the computer. 
+* The user can also adjust the speed of the simulation.  The update period is bounded below by 50ms, and can be adjusted in 50ms increments by the "Increase Speed" and "Decrease Speed" buttons.  In essence, the simulation ignores clock tick events until the specified amount has passed since the last grid update. 
+
+* There are a number of preset grid configurations that the user can chose from via a drop down menu.  They also have the option to save a configuration that they create using the "Save Grid As" field paired with the "Save Grid" button.  These saved configurations are only available for that session, however.
 
 The grid automatically adjusts square size to be the maximum available based upon window size and the restraint of leaving room vertically for the UI.  The UI is defaulted based on button size to save sufficient space.  The grid will always generate square buttons. 
