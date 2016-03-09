@@ -31,7 +31,7 @@ Note: We have found that our simulation performs far better in Chrome than in Fi
 
 * There are a number of preset grid configurations that the user can chose from via a drop down menu.  They also have the option to save a configuration that they create using the "Save Grid As" field paired with the "Save Grid" button.  These saved configurations are only available for that session, however.
 
-## Preset Grids
+## Preset Grids:
 
 There are currently four preset demonstration grids.  They are as follows (Most are taken from Wikipedia's explanation of Conway's Game of Life (https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life))
 
