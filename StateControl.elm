@@ -26,21 +26,21 @@ import PresetStarts exposing (..)
 import String
 
 type alias State = {  g : Grid
-                    , running : Bool
-                    , maxSize : (Maybe Int, Maybe Int)
-                    , newCoords : (Maybe Int, Maybe Int)
-                    , liveToDeath : List Int
-                    , deadToLife : List Int
-                    , savedGrids : List (String, Grid)
-                    , saveNameString : String
-                    , lastUpdate : Float
-                    , updatePeriod : Float
-                    , toroidalGrid : Bool
+                    , running : Bool --running or editing
+                    , maxSize : (Maybe Int, Maybe Int) --maximum grid size
+                    , newCoords : (Maybe Int, Maybe Int) 
+                    , liveToDeath : List Int --rules
+                    , deadToLife : List Int -- rules
+                    , savedGrids : List (String, Grid) --list of configurations
+                    , saveNameString : String -- new name for configuration
+                    , lastUpdate : Float --timer information
+                    , updatePeriod : Float -- update frequency
+                    , toroidalGrid : Bool -- toroidal or not
                   }
 
 type alias ClickEvent = (Int, Int)
 type alias Event = (State -> State)
-
+--initial state
 startState : State
 startState = { g = gliderGun
               , running = False
@@ -97,14 +97,14 @@ maybeTickUpdate x state = if x > state.updatePeriod + state.lastUpdate then
                             tickUpdate { state | lastUpdate = x}
                           else 
                             state
-
+-- only note a tick update if we are running
 tickUpdate : State -> State
 tickUpdate state = 
   if state.running then 
     {state | g = updateGrid state.toroidalGrid state.maxSize state.liveToDeath state.deadToLife state.g}
   else
     state
-
+-- only note a click update if we are not running
 clickUpdate : (Int, Int) -> State -> State
 clickUpdate (coorx,coory) state = 
   if not state.running then 

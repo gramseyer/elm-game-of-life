@@ -51,6 +51,7 @@ renderGrid lastClicked (w,h) state =
     ((C.filled Color.blue (C.rect (toFloat(width)) (toFloat(height)))) :: 
       (List.concat (gridMapExtra (makeSquare lastClicked) (sqsize, width, height) state.g)))
 
+-- calculate square size based on window dimensions and grid size
 findsqsizewh : (Int, Int) -> Grid -> (Float, Int, Int)
 findsqsizewh (w,h) g = 
   let (maxx, maxy) = getDimensions g in 
@@ -61,15 +62,17 @@ findsqsizewh (w,h) g =
   in
     (sqsize, width, height)
 
+-- create the form for each square
 makeSquareForm : Color.Color -> Float -> C.Form
 makeSquareForm color size = C.group [ (C.filled color (C.square size))
                                     , (C.outlined {defaultLine | color = Color.blue} (C.square size))
                                     ] 
-
+-- make the grid clickable
 makeFormIntoClickable : Signal.Mailbox ClickEvent -> Int -> Int -> Int ->C.Form -> C.Form
 makeFormIntoClickable lastClicked x y size form =
   C.toForm (I.clickable (Signal.message lastClicked.address (x,y)) (C.collage size size [form]))
 
+-- create the square based on click
 makeSquare : Signal.Mailbox ClickEvent -> ((Int, Int), Bool, (Float, Int, Int)) -> C.Form
 makeSquare lastClicked ((x,y), v, (size, maxx, maxy)) = 
   let 
